@@ -1,6 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-    const listaProductos = [
+    const listaProductosBase = [
         {
             id: 1,
             nombre: "Grand Theft Auto VI (GTA 6)",
@@ -51,6 +50,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     ];
 
+    function obtenerProductos() {
+        const guardados = localStorage.getItem("productosNubeplay");
+        if (!guardados) {
+            localStorage.setItem("productosNubeplay", JSON.stringify(listaProductosBase));
+            return listaProductosBase;
+        }
+        return JSON.parse(guardados);
+    }
+
+    const listaProductos = obtenerProductos();
     const contenedor = document.getElementById("contenedorProductos");
     const inputBuscar = document.getElementById("inputBuscar");
     const selectCategoria = document.getElementById("selectCategoria");
@@ -65,12 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
     function actualizarContador() {
         const carrito = JSON.parse(localStorage.getItem("carritoNubeplay")) || [];
         const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
-        if (contadorCarrito) {
-            contadorCarrito.textContent = totalItems;
-        }
+        if (contadorCarrito) contadorCarrito.textContent = totalItems;
     }
 
     function renderizarProductos(productos) {
+        if (!contenedor) return;
         contenedor.innerHTML = "";
 
         if (productos.length === 0) {
@@ -95,11 +103,16 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <h5 class="card-title fw-bold text-dark">${producto.nombre}</h5>
                         <p class="card-text text-secondary small flex-grow-1">${producto.descripcion}</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                            <span class="fs-5 fw-bold text-primary">${formatearPrecio(producto.precio)}</span>
-                            <button class="btn btn-primary fw-bold btn-agregar" data-id="${producto.id}">
-                                <i class="bi bi-cart-plus me-1"></i> Agregar
-                            </button>
+                        <div class="mt-3 pt-3 border-top">
+                            <span class="fs-5 fw-bold text-primary d-block mb-3">${formatearPrecio(producto.precio)}</span>
+                            <div class="d-grid gap-2">
+                                <a href="detalle-producto.html?id=${producto.id}" class="btn btn-outline-primary btn-sm fw-bold">
+                                    <i class="bi bi-eye me-1"></i> Ver Detalle
+                                </a>
+                                <button class="btn btn-primary btn-sm fw-bold btn-agregar" data-id="${producto.id}">
+                                    <i class="bi bi-cart-plus me-1"></i> Agregar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -130,11 +143,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         localStorage.setItem("carritoNubeplay", JSON.stringify(carrito));
         actualizarContador();
-        mensajeAlerta.textContent = `"${productoEncontrado.nombre}" añadido al carrito.`;
-        alertaCarrito.classList.remove("d-none");
-        setTimeout(() => {
-            alertaCarrito.classList.add("d-none");
-        }, 2500);
+
+        if (alertaCarrito && mensajeAlerta) {
+            mensajeAlerta.textContent = `"${productoEncontrado.nombre}" añadido al carrito.`;
+            alertaCarrito.classList.remove("d-none");
+            setTimeout(() => {
+                alertaCarrito.classList.add("d-none");
+            }, 2500);
+        }
     }
 
     function filtrarProductos() {
@@ -150,10 +166,9 @@ document.addEventListener("DOMContentLoaded", () => {
         renderizarProductos(productosFiltrados);
     }
 
-    inputBuscar.addEventListener("input", filtrarProductos);
-    selectCategoria.addEventListener("change", filtrarProductos);
+    if (inputBuscar) inputBuscar.addEventListener("input", filtrarProductos);
+    if (selectCategoria) selectCategoria.addEventListener("change", filtrarProductos);
 
     renderizarProductos(listaProductos);
     actualizarContador();
 });
-

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Producto | NUBEPLAY</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-nubeplay">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="../index.html">
+                <i class="bi bi-cloud-fill"></i> NUBEPLAY
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="productos.html">Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="blogs.html">Noticias</a></li>
+                    <li class="nav-item"><a class="nav-link" href="nosotros.html">Nosotros</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
+                    <li class="nav-item ms-lg-3">
+                        <a class="nav-link fw-bold" href="carrito.html">
+                            <i class="bi bi-cart3 me-1"></i> Carrito 
+                            <span id="contadorCarrito" class="badge bg-primary ms-1">0</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="container my-5 flex-grow-1">
+
+        <!-- Migas de pan / Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="../index.html" class="text-decoration-none">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="productos.html" class="text-decoration-none">Productos</a></li>
+                <li class="breadcrumb-item active" id="breadcrumbNombre" aria-current="page">Cargando...</li>
+            </ol>
+        </nav>
+
+        <!-- Alerta de agregación -->
+        <div id="alertaDetalle" class="alert alert-success d-none alert-dismissible fade show" role="alert">
+            <span id="mensajeAlerta"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <!-- Tarjeta Principal del Producto -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+            <div class="card-body p-4 p-md-5">
+                <div class="row g-4" id="contenedorDetalle">
+                    
+                    <!-- Columna Galería -->
+                    <div class="col-lg-6">
+                        <div class="text-center mb-3 bg-white p-3 rounded-4 border">
+                            <img id="imagenPrincipal" src="" alt="Producto" class="img-fluid rounded-3" style="max-height: 400px; object-fit: contain;">
+                        </div>
+                        <!-- Miniaturas simuladas -->
+                        <div class="d-flex justify-content-center gap-2" id="galeriaMiniaturas">
+                            <!-- JS cargará las opciones de imágenes -->
+                        </div>
+                    </div>
+
+                    <!-- Columna Información -->
+                    <div class="col-lg-6 d-flex flex-column justify-content-center">
+                        <span id="categoriaBadge" class="badge bg-secondary text-uppercase mb-2 align-self-start">Categoría</span>
+                        <h2 id="nombreProducto" class="fw-bold mb-2">Nombre del Producto</h2>
+                        
+                        <!-- Puntuación Reseñas -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="text-warning me-2">
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-fill"></i>
+                                <i class="bi bi-star-half"></i>
+                            </div>
+                            <span class="small text-muted">(4.8 / 5.0 basadas en 24 opiniones)</span>
+                        </div>
+
+                        <h3 id="precioProducto" class="display-6 fw-bold text-primary mb-3">$0</h3>
+                        
+                        <p id="descripcionProducto" class="text-secondary mb-4">
+                            Cargando descripción detallada...
+                        </p>
+
+                        <!-- Control de Stock y Botones -->
+                        <div class="mb-4">
+                            <span class="fw-semibold d-block mb-2">Disponibilidad: <span id="stockEstado" class="badge bg-success">En Stock</span></span>
+                            
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="input-group" style="width: 130px;">
+                                    <button class="btn btn-outline-secondary" type="button" id="btnRestarCant">-</button>
+                                    <input type="text" class="form-control text-center fw-bold" id="inputCantidad" value="1" readonly>
+                                    <button class="btn btn-outline-secondary" type="button" id="btnSumarCant">+</button>
+                                </div>
+                                <button id="btnAgregarCarrito" class="btn btn-primary fw-bold px-4 py-2 flex-grow-1">
+                                    <i class="bi bi-cart-plus me-2"></i> Añadir al Carrito
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Garantías y Envíos -->
+                        <div class="border-top pt-3 text-secondary small">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="bi bi-truck fs-5 text-primary me-2"></i> Envío gratis a todo el país.
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-shield-check fs-5 text-primary me-2"></i> Garantía oficial de 12 meses.
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Comentarios / Opiniones -->
+        <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-chat-square-text me-2"></i>Opiniones de Compradores</h5>
+            <div class="border-bottom pb-3 mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <strong class="text-dark">Carlos M.</strong>
+                    <small class="text-muted">Hace 3 días</small>
+                </div>
+                <div class="text-warning small mb-1">
+                    <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                </div>
+                <p class="text-secondary mb-0 small">Excelente producto, llegó en perfecto estado a Santiago y superó mis expectativas.</p>
+            </div>
+        </div>
+
+        <!-- Sección de Comentarios / Opiniones -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+            <h5 class="fw-bold mb-3"><i class="bi bi-chat-square-text me-2"></i>Opiniones de Compradores</h5>
+            
+            <!-- Contenedor dinámico de reseñas -->
+            <div id="listaResenas" class="mb-4">
+                <!-- JS insertará las opiniones aquí -->
+            </div>
+
+            <!-- Formulario para escribir reseña -->
+            <div class="bg-light p-3 rounded-3 border">
+                <h6 class="fw-bold mb-3">Deja tu Opinión</h6>
+                <form id="formResena">
+                    <div class="row g-3 mb-2">
+                        <div class="col-md-6">
+                            <input type="text" id="nombreResena" class="form-control form-control-sm" placeholder="Tu Nombre" required>
+                        </div>
+                        <div class="col-md-6">
+                            <select id="puntuacionResena" class="form-select form-select-sm" required>
+                                <option value="5">★★★★★ (5/5)</option>
+                                <option value="4">★★★★☆ (4/5)</option>
+                                <option value="3">★★★☆☆ (3/5)</option>
+                                <option value="2">★★☆☆☆ (2/5)</option>
+                                <option value="1">★☆☆☆☆ (1/5)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <textarea id="comentarioResena" class="form-control form-control-sm" rows="2" placeholder="Escribe tu opinión sobre el producto..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm fw-bold">Publicar Reseña</button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="footer-nubeplay py-4 text-center mt-auto bg-dark text-white">
+        <div class="container">
+            <p class="mb-0">© 2026 NUBEPLAY. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/detalle.js"></script>
+</body>
+
+</html>
