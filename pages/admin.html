@@ -1,0 +1,314 @@
+ <!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | NUBEPLAY</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body class="d-flex flex-column min-vh-100 bg-light">
+
+    <!-- Navegación Admin -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="../index.html">
+                <i class="bi bi-cloud-fill"></i> NUBEPLAY <span class="badge bg-danger ms-1 fs-6">Admin</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuAdmin">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menuAdmin">
+                <ul class="navbar-nav ms-auto align-items-lg-center">
+                    <li class="nav-item"><a class="nav-link" href="../index.html"><i class="bi bi-house me-1"></i> Ver Tienda</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger fw-bold" href="login.html"><i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="container my-4 flex-grow-1">
+
+        <!-- Tarjetas de Estadísticas -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-primary text-white p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Total Productos</h6>
+                            <h2 class="fw-bold mb-0" id="totalProductosCount">0</h2>
+                        </div>
+                        <i class="bi bi-controller display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-success text-white p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-white-50 mb-1">Usuarios Registrados</h6>
+                            <h2 class="fw-bold mb-0" id="totalUsuariosCount">0</h2>
+                        </div>
+                        <i class="bi bi-people display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm rounded-4 bg-warning text-dark p-3">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="text-dark-50 mb-1">Stock Bajo (< 5)</h6>
+                            <h2 class="fw-bold mb-0" id="stockBajoCount">0</h2>
+                        </div>
+                        <i class="bi bi-exclamation-triangle display-4 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestañas de Navegación del Panel -->
+        <ul class="nav nav-pills mb-3 bg-white p-2 rounded-3 shadow-sm" id="adminTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold" id="tab-productos" data-bs-toggle="pill" data-bs-target="#panel-productos" type="button" role="tab">
+                    <i class="bi bi-box-seam me-1"></i> Gestión de Productos
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="tab-usuarios" data-bs-toggle="pill" data-bs-target="#panel-usuarios" type="button" role="tab">
+                    <i class="bi bi-person-lines-fill me-1"></i> Usuarios Registrados
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="adminTabsContent">
+
+            <!-- TAB 1: PRODUCTOS -->
+            <div class="tab-pane fade show active" id="panel-productos" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-white p-3 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold mb-0">Inventario de Productos</h5>
+                        <button class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalProducto" id="btnNuevoProducto">
+                            <i class="bi bi-plus-circle me-1"></i> Agregar Producto
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">ID</th>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Precio</th>
+                                        <th>Stock</th>
+                                        <th class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaProductosAdmin"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: USUARIOS -->
+            <div class="tab-pane fade" id="panel-usuarios" role="tabpanel">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                    <div class="card-header bg-white p-3">
+                        <h5 class="fw-bold mb-0">Usuarios Registrados en la Plataforma</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">ID</th>
+                                        <th>Nombre</th>
+                                        <th>Correo</th>
+                                        <th>Rol</th>
+                                        <th>Estado</th>
+                                        <th class="text-center">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaUsuariosAdmin"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal para Agregar / Editar Producto -->
+    <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="modalProductoTitulo">Agregar Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formProducto" novalidate>
+                    <div class="modal-body p-4">
+                        <input type="hidden" id="prodId">
+
+                        <div class="mb-3">
+                            <label for="prodNombre" class="form-label fw-semibold">Nombre del Producto</label>
+                            <input type="text" class="form-control" id="prodNombre" required>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="prodCategoria" class="form-label fw-semibold">Categoría</label>
+                                <select class="form-select" id="prodCategoria" required>
+                                    <option value="juegos">Videojuegos</option>
+                                    <option value="consolas">Consolas</option>
+                                    <option value="accesorios">Accesorios</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="prodPrecio" class="form-label fw-semibold">Precio (CLP)</label>
+                                <input type="number" class="form-control" id="prodPrecio" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prodStock" class="form-label fw-semibold">Cantidad en Stock</label>
+                            <input type="number" class="form-control" id="prodStock" min="0" required>
+                        </div>
+
+                        <!-- Campo Descripción -->
+                        <div class="mb-3">
+                            <label for="prodDescripcion" class="form-label fw-semibold">Descripción del Producto</label>
+                            <textarea class="form-control" id="prodDescripcion" rows="3" placeholder="Detalla las características del producto..." required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="prodImagen" class="form-label fw-semibold">URL de la Imagen</label>
+                            <input type="url" class="form-control" id="prodImagen" placeholder="https://..." required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary fw-bold">Guardar Producto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Editar Usuario Completo y Ver Detalle de Compras -->
+    <div class="modal fade" id="modalUsuario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Expediente Completo del Usuario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="formUsuario" class="mb-4">
+                        <input type="hidden" id="usrId">
+                        
+                        <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">
+                            <i class="bi bi-person-vcard me-1"></i> Datos Personales y de Cuenta
+                        </h6>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="usrNombre" class="form-label fw-semibold">Nombre Completo</label>
+                                <input type="text" class="form-control" id="usrNombre" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="usrRut" class="form-label fw-semibold">RUT / Identificación</label>
+                                <input type="text" class="form-control" id="usrRut" placeholder="12.345.678-9" required>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="usrCorreo" class="form-label fw-semibold">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="usrCorreo" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="usrTelefono" class="form-label fw-semibold">Teléfono de Contacto</label>
+                                <input type="tel" class="form-control" id="usrTelefono" placeholder="+56 9 1234 5678" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="usrDireccion" class="form-label fw-semibold">Dirección de Envío</label>
+                            <input type="text" class="form-control" id="usrDireccion" placeholder="Av. Siempreviva 123, Depto 45, Santiago" required>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label for="usrPassword" class="form-label fw-semibold">Contraseña</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="usrPassword" required>
+                                    <button class="btn btn-outline-secondary" type="button" id="btnGenerarPass" title="Generar Clave Aleatoria">
+                                        <i class="bi bi-key"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="usrRol" class="form-label fw-semibold">Rol de Usuario</label>
+                                <select class="form-select" id="usrRol">
+                                    <option value="Cliente">Cliente</option>
+                                    <option value="Administrador">Administrador</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="usrEstado" class="form-label fw-semibold">Estado de la Cuenta</label>
+                                <select class="form-select" id="usrEstado">
+                                    <option value="Activo">Activo</option>
+                                    <option value="Inactivo">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary fw-bold">
+                                <i class="bi bi-save me-1"></i> Actualizar Usuario
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Historial de Compras -->
+                    <h6 class="fw-bold text-primary border-bottom pb-2 mb-3">
+                        <i class="bi bi-bag-check me-1"></i> Historial de Compras Realizadas
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cant.</th>
+                                    <th>Total Pagado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaComprasUsuario"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="py-4 text-center mt-auto bg-dark text-white">
+        <div class="container">
+            <p class="mb-0 small">© 2026 NUBEPLAY. Módulo de Administración.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/admin.js"></script>
+</body>
+
+</html>
+
