@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto | NUBEPLAY</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-nubeplay">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="../index.html">
+                <i class="bi bi-cloud-fill"></i> NUBEPLAY
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="productos.html">Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="nosotros.html">Nosotros</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="contacto.html">Contacto</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login.html">Iniciar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-5 flex-grow-1">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="text-center mb-4">
+                    <i class="bi bi-cloud-fill text-primary display-3"></i>
+                    <h2 class="fw-bold mt-2">NUBEPLAY</h2>
+                    <p class="text-muted">¿Tienes alguna duda o sugerencia? Escríbenos.</p>
+                </div>
+
+                <div class="card shadow-lg border-0 rounded-4">
+                    <div class="card-header bg-primary text-white text-center py-3 rounded-top-4">
+                        <h4 class="mb-0 fw-bold"><i class="bi bi-envelope-paper-fill me-2"></i>Formulario de Contacto</h4>
+                    </div>
+                    <div class="card-body p-4 p-md-5">
+                        <form id="formContacto" novalidate>
+                            <div class="mb-3">
+                                <label for="nombreContacto" class="form-label fw-semibold">Nombre Completo *</label>
+                                <input type="text" class="form-control" id="nombreContacto" maxlength="100" placeholder="Ingresa tu nombre completo" required>
+                                <div class="invalid-feedback">El nombre es requerido (máximo 100 caracteres).</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="correoContacto" class="form-label fw-semibold">Correo Electrónico (Opcional)</label>
+                                <input type="email" class="form-control" id="correoContacto" maxlength="100" placeholder="ejemplo@duoc.cl">
+                                <div class="invalid-feedback">Si ingresas un correo, debe ser válido (@duoc.cl, @profesor.duoc.cl o @gmail.com) y máximo 100 caracteres.</div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="comentarioContacto" class="form-label fw-semibold">Comentario / Mensaje *</label>
+                                <textarea class="form-control" id="comentarioContacto" rows="4" maxlength="500" placeholder="Escribe tu mensaje aquí..." required></textarea>
+                                <div class="invalid-feedback">El mensaje es requerido (máximo 500 caracteres).</div>
+                                <div class="form-text text-end"><span id="contadorCaracteres">0</span>/500 caracteres</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                                <i class="bi bi-send-fill me-1"></i> Enviar Mensaje
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-nubeplay py-4 text-center mt-auto bg-dark text-white">
+        <div class="container">
+            <p class="mb-0">© 2026 NUBEPLAY. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/contacto.js"></script>
+</body>
+
+</html>
+
+
