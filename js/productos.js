@@ -1,65 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const listaProductosBase = [
-        {
-            id: 1,
-            nombre: "Grand Theft Auto VI (GTA 6)",
-            categoria: "juegos",
-            precio: 69990,
-            imagen: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop",
-            descripcion: "La entrega más esperada de Rockstar Games ambientada en Vice City."
-        },
-        {
-            id: 2,
-            nombre: "Consola PlayStation 5",
-            categoria: "consolas",
-            precio: 549990,
-            imagen: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?q=80&w=800&auto=format&fit=crop",
-            descripcion: "Experimenta tiempos de carga ultrarrápidos y gráficos de última generación."
-        },
-        {
-            id: 3,
-            nombre: "Mando Inalámbrico DualSense",
-            categoria: "accesorios",
-            precio: 64990,
-            imagen: "https://images.unsplash.com/photo-1592840496694-26d035b52b48?q=80&w=800&auto=format&fit=crop",
-            descripcion: "Retroalimentación háptica y gatillos adaptativos para mayor inmersión."
-        },
-        {
-            id: 4,
-            nombre: "Audífonos Gamer Wireless 7.1",
-            categoria: "accesorios",
-            precio: 45990,
-            imagen: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?q=80&w=800&auto=format&fit=crop",
-            descripcion: "Sonido envolvente surround 7.1 con micrófono con cancelación de ruido."
-        },
-        {
-            id: 5,
-            nombre: "Elden Ring: Shadow of the Erdtree",
-            categoria: "juegos",
-            precio: 39990,
-            imagen: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800&auto=format&fit=crop",
-            descripcion: "Aclama la expansión del galardonado juego del año con nuevas tierras y jefes."
-        },
-        {
-            id: 6,
-            nombre: "Nintendo Switch OLED",
-            categoria: "consolas",
-            precio: 329990,
-            imagen: "https://images.unsplash.com/photo-1578303512597-81e6cc155b3e?q=80&w=800&auto=format&fit=crop",
-            descripcion: "Pantalla OLED de 7 pulgadas con colores vibrantes para jugar donde quieras."
-        }
-    ];
-
-    function obtenerProductos() {
-        const guardados = localStorage.getItem("productosNubeplay");
-        if (!guardados) {
-            localStorage.setItem("productosNubeplay", JSON.stringify(listaProductosBase));
-            return listaProductosBase;
-        }
-        return JSON.parse(guardados);
-    }
-
-    const listaProductos = obtenerProductos();
+    const API_URL = "http://localhost:8080/api";
     const contenedor = document.getElementById("contenedorProductos");
     const inputBuscar = document.getElementById("inputBuscar");
     const selectCategoria = document.getElementById("selectCategoria");
@@ -71,14 +11,56 @@ document.addEventListener("DOMContentLoaded", () => {
         return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(precio);
     }
 
-    function actualizarContador() {
-        const carrito = JSON.parse(localStorage.getItem("carritoNubeplay")) || [];
-        const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
-        if (contadorCarrito) contadorCarrito.textContent = totalItems;
+    function obtenerSessionId() {
+        let sessionId = localStorage.getItem("nubeplay_session_id");
+        if (!sessionId) {
+            sessionId = "sess_" + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem("nubeplay_session_id", sessionId);
+        }
+        return sessionId;
+    }
+
+    async function actualizarContador() {
+        if (!contadorCarrito) return;
+        try {
+            const res = await fetch(`${API_URL}/carrito/${obtenerSessionId()}`);
+            if (res.ok) {
+                const data = await res.json();
+                const totalItems = data.items.reduce((acc, item) => acc + item.cantidad, 0);
+                contadorCarrito.textContent = totalItems;
+            }
+        } catch (err) {
+            console.error("Error al obtener estado del carrito:", err);
+        }
+    }
+
+    async function cargarProductos() {
+        if (!contenedor) return;
+
+        const buscar = inputBuscar ? inputBuscar.value.trim() : "";
+        const categoria = selectCategoria ? selectCategoria.value : "todas";
+
+        try {
+            const url = new URL(`${API_URL}/productos`);
+            if (buscar) url.searchParams.append("buscar", buscar);
+            if (categoria) url.searchParams.append("categoria", categoria);
+
+            const res = await fetch(url);
+            const productos = await res.json();
+
+            renderizarProductos(productos);
+        } catch (err) {
+            console.error("Error al cargar productos desde la API:", err);
+            contenedor.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="bi bi-exclamation-triangle display-3 text-danger"></i>
+                    <h4 class="mt-3 text-muted">Error al conectar con la base de datos</h4>
+                </div>
+            `;
+        }
     }
 
     function renderizarProductos(productos) {
-        if (!contenedor) return;
         contenedor.innerHTML = "";
 
         if (productos.length === 0) {
@@ -109,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <a href="detalle-producto.html?id=${producto.id}" class="btn btn-outline-primary btn-sm fw-bold">
                                     <i class="bi bi-eye me-1"></i> Ver Detalle
                                 </a>
-                                <button class="btn btn-primary btn-sm fw-bold btn-agregar" data-id="${producto.id}">
+                                <button class="btn btn-primary btn-sm fw-bold btn-agregar" data-id="${producto.id}" data-nombre="${producto.nombre}">
                                     <i class="bi bi-cart-plus me-1"></i> Agregar
                                 </button>
                             </div>
@@ -121,54 +103,42 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         document.querySelectorAll(".btn-agregar").forEach(boton => {
-            boton.addEventListener("click", (e) => {
+            boton.addEventListener("click", async (e) => {
                 const idProd = parseInt(e.currentTarget.getAttribute("data-id"));
-                agregarAlCarrito(idProd);
+                const nombreProd = e.currentTarget.getAttribute("data-nombre");
+                await agregarAlCarrito(idProd, nombreProd);
             });
         });
     }
 
-    function agregarAlCarrito(idProducto) {
-        const productoEncontrado = listaProductos.find(p => p.id === idProducto);
-        if (!productoEncontrado) return;
+    async function agregarAlCarrito(productoId, nombreProducto) {
+        try {
+            const res = await fetch(`${API_URL}/carrito`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sessionId: obtenerSessionId(),
+                    productoId: productoId,
+                    cantidad: 1
+                })
+            });
 
-        let carrito = JSON.parse(localStorage.getItem("carritoNubeplay")) || [];
-        const index = carrito.findIndex(item => item.id === idProducto);
-
-        if (index !== -1) {
-            carrito[index].cantidad += 1;
-        } else {
-            carrito.push({ ...productoEncontrado, cantidad: 1 });
-        }
-
-        localStorage.setItem("carritoNubeplay", JSON.stringify(carrito));
-        actualizarContador();
-
-        if (alertaCarrito && mensajeAlerta) {
-            mensajeAlerta.textContent = `"${productoEncontrado.nombre}" añadido al carrito.`;
-            alertaCarrito.classList.remove("d-none");
-            setTimeout(() => {
-                alertaCarrito.classList.add("d-none");
-            }, 2500);
+            if (res.ok) {
+                actualizarContador();
+                if (alertaCarrito && mensajeAlerta) {
+                    mensajeAlerta.textContent = `"${nombreProducto}" añadido al carrito.`;
+                    alertaCarrito.classList.remove("d-none");
+                    setTimeout(() => alertaCarrito.classList.add("d-none"), 2500);
+                }
+            }
+        } catch (err) {
+            console.error("Error al agregar al carrito:", err);
         }
     }
 
-    function filtrarProductos() {
-        const texto = inputBuscar.value.toLowerCase().trim();
-        const categoria = selectCategoria.value;
+    if (inputBuscar) inputBuscar.addEventListener("input", cargarProductos);
+    if (selectCategoria) selectCategoria.addEventListener("change", cargarProductos);
 
-        const productosFiltrados = listaProductos.filter(producto => {
-            const coincideNombre = producto.nombre.toLowerCase().includes(texto);
-            const coincideCategoria = categoria === "todas" || producto.categoria === categoria;
-            return coincideNombre && coincideCategoria;
-        });
-
-        renderizarProductos(productosFiltrados);
-    }
-
-    if (inputBuscar) inputBuscar.addEventListener("input", filtrarProductos);
-    if (selectCategoria) selectCategoria.addEventListener("change", filtrarProductos);
-
-    renderizarProductos(listaProductos);
+    cargarProductos();
     actualizarContador();
 });
