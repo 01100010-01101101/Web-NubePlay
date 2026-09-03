@@ -1,0 +1,382 @@
+:root {
+    --nubeplay-blue: #0d6efd;
+    --nubeplay-dark: #111827;
+    --nubeplay-dark-2: #1f2937;
+    --nubeplay-light: #f8f9fa;
+    --nubeplay-gray: #6b7280;
+}
+
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #ffffff;
+    color: #222;
+}
+
+a {
+    text-decoration: none;
+}
+.navbar-nubeplay {
+    background-color: var(--nubeplay-dark);
+    padding: 14px 0;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.25);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    letter-spacing: 1px;
+}
+
+.navbar-brand i {
+    color: var(--nubeplay-blue);
+}
+
+.navbar-nubeplay .nav-link {
+    color: #ffffff;
+    margin-left: 8px;
+    transition: 0.3s;
+}
+
+.navbar-nubeplay .nav-link:hover {
+    color: #6ea8fe;
+}
+
+.carrito-nav {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.hero-nubeplay {
+    min-height: 700px;
+    padding-top: 150px;
+    padding-bottom: 100px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #111827,
+            #1e293b
+        );
+
+    color: white;
+
+    display: flex;
+    align-items: center;
+}
+
+.hero-nubeplay h1 {
+    font-size: 3.8rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.hero-nubeplay h1 span {
+    color: var(--nubeplay-blue);
+}
+
+.hero-nubeplay p {
+    font-size: 1.2rem;
+    line-height: 1.7;
+    color: #d1d5db;
+    max-width: 600px;
+}
+
+.badge-nubeplay {
+    background-color: rgba(13, 110, 253, 0.15);
+    border: 1px solid var(--nubeplay-blue);
+    color: #8bb9fe;
+    padding: 9px 14px;
+}
+
+.hero-img {
+    width: 100%;
+    max-width: 500px;
+    max-height: 450px;
+    object-fit: contain;
+}
+
+.btn-nubeplay {
+    background-color: var(--nubeplay-blue);
+    border: 2px solid var(--nubeplay-blue);
+    color: white;
+    font-weight: 600;
+    padding: 10px 22px;
+    transition: 0.3s;
+}
+
+.btn-nubeplay:hover {
+    background-color: transparent;
+    color: var(--nubeplay-blue);
+    border-color: var(--nubeplay-blue);
+}
+
+.productos-section {
+    padding: 90px 0;
+    background-color: #ffffff;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.section-title span {
+    color: var(--nubeplay-blue);
+    font-size: 0.85rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.section-title h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: 8px;
+}
+
+.section-title p {
+    color: var(--nubeplay-gray);
+}
+
+.producto-card {
+    height: 100%;
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #ffffff;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.08);
+
+    transition: 0.3s;
+}
+
+.producto-card:hover {
+    transform: translateY(-8px);
+
+    box-shadow:
+        0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.producto-imagen {
+    height: 240px;
+    width: 100%;
+    object-fit: contain;
+    padding: 20px;
+}
+
+.producto-card .card-body {
+    padding: 25px;
+}
+
+.producto-card h5 {
+    font-weight: 700;
+}
+
+.producto-precio {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--nubeplay-blue);
+}
+
+.stock-disponible {
+    color: #198754;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.stock-agotado {
+    color: #dc3545;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+
+.beneficios-section {
+    background-color: var(--nubeplay-light);
+    padding: 70px 0;
+}
+
+.beneficio {
+    background-color: white;
+    text-align: center;
+    padding: 35px 25px;
+    border-radius: 12px;
+    height: 100%;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.beneficio i {
+    font-size: 2.8rem;
+    color: var(--nubeplay-blue);
+    margin-bottom: 20px;
+}
+
+.beneficio h4 {
+    font-weight: 700;
+}
+
+.beneficio p {
+    color: var(--nubeplay-gray);
+}
+
+
+.pagos-section {
+    padding: 70px 0;
+}
+
+.pagos-section h2 {
+    font-weight: 700;
+}
+
+.pagos-section p {
+    color: var(--nubeplay-gray);
+}
+
+.metodos-pago {
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.metodo-pago {
+    min-width: 150px;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    background-color: white;
+}
+
+.metodo-pago i {
+    font-size: 2rem;
+    color: var(--nubeplay-blue);
+    display: block;
+    margin-bottom: 8px;
+}
+
+
+.nosotros-home {
+    background-color: var(--nubeplay-light);
+    padding: 90px 0;
+}
+
+.nosotros-home h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.nosotros-home p {
+    color: var(--nubeplay-gray);
+    line-height: 1.8;
+}
+
+.nosotros-card {
+    background-color: var(--nubeplay-dark);
+    color: white;
+    padding: 50px;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.nosotros-card i {
+    font-size: 4rem;
+    color: var(--nubeplay-blue);
+}
+
+.nosotros-card h3 {
+    margin-top: 20px;
+}
+
+
+.footer-nubeplay {
+    background-color: var(--nubeplay-dark);
+    color: white;
+    padding: 60px 0 25px;
+}
+
+.footer-nubeplay h4 i {
+    color: var(--nubeplay-blue);
+}
+
+.footer-nubeplay h5 {
+    margin-bottom: 20px;
+}
+
+.footer-nubeplay p {
+    color: #cbd5e1;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-links li {
+    margin-bottom: 10px;
+}
+
+.footer-links a {
+    color: #cbd5e1;
+    transition: 0.3s;
+}
+
+.footer-links a:hover {
+    color: white;
+}
+
+.footer-nubeplay hr {
+    border-color: #374151;
+    margin-top: 40px;
+}
+
+
+@media (max-width: 991px) {
+
+    .hero-nubeplay {
+        text-align: center;
+        padding-top: 130px;
+    }
+
+    .hero-nubeplay p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-nubeplay h1 {
+        font-size: 3rem;
+    }
+
+    .hero-img {
+        margin-top: 50px;
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .hero-nubeplay h1 {
+        font-size: 2.3rem;
+    }
+
+    .hero-buttons .btn {
+        display: block;
+        width: 100%;
+        margin: 10px 0 !important;
+    }
+
+    .productos-section,
+    .nosotros-home {
+        padding: 60px 0;
+    }
+
+}
