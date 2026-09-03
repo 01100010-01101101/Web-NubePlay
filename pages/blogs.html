@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noticias y Blog | NUBEPLAY</title>
+
+    <!-- Bootstrap CSS e Iconos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Estilos de la aplicación -->
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-nubeplay">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="../index.html">
+                <i class="bi bi-cloud-fill"></i> NUBEPLAY
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="menuPrincipal">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link" href="productos.html">Productos</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="blogs.html">Noticias</a></li>
+                    <li class="nav-item"><a class="nav-link" href="nosotros.html">Nosotros</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contacto.html">Contacto</a></li>
+                    <li class="nav-item"><a class="nav-link" href="login.html">Iniciar Sesión</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Encabezado -->
+    <header class="bg-primary text-white py-5 text-center mb-5">
+        <div class="container">
+            <h1 class="fw-bold display-4"><i class="bi bi-newspaper me-2"></i>Noticias Gaming & Tech</h1>
+            <p class="lead mb-0">Entérate de las últimas novedades del mundo de los videojuegos y la tecnología.</p>
+        </div>
+    </header>
+
+    <!-- Sección de Noticias -->
+    <main class="container my-4 flex-grow-1">
+        <div class="row g-4 justify-content-center">
+
+            <!-- Noticia 1: GTA 6 -->
+            <div class="col-md-6 col-lg-6">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop" class="card-img-top" alt="GTA VI" style="height: 240px; object-fit: cover;">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="badge bg-danger">Gaming</span>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark mb-3">Lanzamiento Oficial de Grand Theft Auto VI (GTA 6)</h4>
+                        <p class="card-text text-secondary flex-grow-1">
+                            Rockstar Games ha confirmado los últimos detalles de la esperada llegada de GTA VI. Vice City vuelve con un mapa masivo y un sistema de IA revolucionario.
+                        </p>
+                        <div class="pt-3 border-top mt-3">
+                            <button class="btn btn-outline-primary w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#modalNoticia1">
+                                Leer noticia completa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Noticia 2: Avance Tecnológico -->
+            <div class="col-md-6 col-lg-6">
+                <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop" class="card-img-top" alt="Avances en Hardware" style="height: 240px; object-fit: cover;">
+                    <div class="card-body p-4 d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="badge bg-info text-dark">Tecnología</span>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark mb-3">Nueva Generación de Tarjetas Gráficas y Renderizado IA</h4>
+                        <p class="card-text text-secondary flex-grow-1">
+                            Las nuevas arquitecturas de GPUs implementan aceleradores por Inteligencia Artificial para alcanzar resoluciones 8K sin pérdida de rendimiento.
+                        </p>
+                        <div class="pt-3 border-top mt-3">
+                            <button class="btn btn-outline-primary w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#modalNoticia2">
+                                Leer noticia completa
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- MODAL NOTICIA 1: GTA VI -->
+    <div class="modal fade" id="modalNoticia1" tabindex="-1" aria-labelledby="modalNoticia1Label" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="modalNoticia1Label"><i class="bi bi-controller me-2"></i>Grand Theft Auto VI: Todos los detalles</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop" class="img-fluid rounded-3 mb-3 w-100" style="max-height: 300px; object-fit: cover;" alt="GTA VI Detail">
+                    <p class="lead fw-normal">Rockstar Games marca un hito en la industria con el lanzamiento de la nueva entrega de su saga insignia.</p>
+                    <p>El juego nos traslada nuevamente al estado de Leonida y las calles iluminadas por neón de Vice City, ofreciendo la versión más grande e inmersiva de la franquicia hasta la fecha.</p>
+                    <p><strong>Novedades clave:</strong></p>
+                    <ul>
+                        <li><strong>Dos protagonistas:</strong> Una historia enfocada en el crimen dinámico al estilo Bonnie y Clyde.</li>
+                        <li><strong>Inteligencia Artificial Avanzada:</strong> Los ciudadanos y el tráfico reaccionan de manera orgánica a las acciones del jugador.</li>
+                        <li><strong>Gráficos de Nueva Generación:</strong> Físicas de agua mejoradas, iluminación por trazado de rayos en tiempo real y entornos altamente destruibles.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOTICIA 2: TECNOLOGÍA -->
+    <div class="modal fade" id="modalNoticia2" tabindex="-1" aria-labelledby="modalNoticia2Label" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header bg-info text-dark">
+                    <h5 class="modal-title fw-bold" id="modalNoticia2Label"><i class="bi bi-cpu me-2"></i>Revolución en GPUs e Inteligencia Artificial</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop" class="img-fluid rounded-3 mb-3 w-100" style="max-height: 300px; object-fit: cover;" alt="Hardware Detail">
+                    <p class="lead fw-normal">Los principales fabricantes de hardware han anunciado la llegada de microarquitecturas optimizadas para modelos generativos en tiempo real.</p>
+                    <p>Esta tecnología promete transformar radicalmente la tasa de fotogramas por segundo (FPS) en pantallas de ultra alta definición, reduciendo el consumo energético en un 30% comparado con la generación anterior.</p>
+                    <p><strong>Puntos destacados:</strong></p>
+                    <ul>
+                        <li><strong>Generación de fotogramas por IA:</strong> Interpolación nativa por Tensor Cores de quinta generación.</li>
+                        <li><strong>Mayor eficiencia:</strong> Menor disipación de calor manteniendo frecuencias de reloj por encima de los 3.0 GHz.</li>
+                        <li><strong>Soporte DirectSR:</strong> Estandarización de superresolución para todos los motores gráficos modernos.</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-nubeplay py-4 text-center mt-auto bg-dark text-white">
+        <div class="container">
+            <p class="mb-0">© 2026 NUBEPLAY. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
+
