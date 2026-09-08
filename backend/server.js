@@ -1,18 +1,16 @@
 const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const pool = require("./db");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 8080;
-const JWT_SECRET = process.env.JWT_SECRET || "secreto_nubeplay_default";
 
 app.use(cors());
 app.use(express.json());
 
-// --- RUTAS DE USUARIOS Y AUTENTICACIÓN ---
+// --- USUARIOS (SIMPLIFICADO) ---
 
 // Registro de usuario
 app.post("/api/auth/registro", async (req, res) => {
@@ -20,26 +18,22 @@ app.post("/api/auth/registro", async (req, res) => {
     const { nombre, email, password } = req.body;
 
     if (!nombre || !email || !password) {
-      return res.status(400).json({ error: "Todos los campos son obligatorios" });
+      return res.status(400).json({ error: "Faltan campos requeridos" });
     }
 
-    const existe = await pool.query("SELECT id FROM usuarios WHERE email = $1", [email]);
-    if (existe.rows.length > 0) {
-      return res.status(400).json({ error: "El correo electrónico ya está registrado" });
-    }
+    // Encriptar la contraseña por seguridad básica
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    const nuevoUsuario = await pool.query(
-      "INSERT INTO usuarios (nombre, email, password) VALUES ($1, $2, $3) RETURNING id, nombre, email, rol",
+    const result = await pool.query(
+      "INSERT INTO usuarios (nombre, email, password) VALUES ($1, $2, $3) RETURNING id, nombre, email",
       [nombre, email, passwordHash]
     );
 
-    res.status(201).json({ mensaje: "Usuario registrado con éxito", usuario: nuevoUsuario.rows[0] });
+    console.log("Usuario insertado con éxito:", result.rows[0]);
+    res.json({ mensaje: "Usuario creado", usuario: result.rows[0] });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error en el servidor al registrar usuario" });
+    console.error("Error al registrar:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -50,41 +44,38 @@ app.post("/api/auth/login", async (req, res) => {
 
     const result = await pool.query("SELECT * FROM usuarios WHERE email = $1", [email]);
     if (result.rows.length === 0) {
-      return res.status(400).json({ error: "Credenciales inválidas" });
+      return res.status(400).json({ error: "Usuario no encontrado" });
     }
 
     const usuario = result.rows[0];
+    const esCorrecta = await bcrypt.compare(password, usuario.password);
 
-    const passwordValido = await bcrypt.compare(password, usuario.password);
-    if (!passwordValido) {
-      return res.status(400).json({ error: "Credenciales inválidas" });
+    if (!esCorrecta) {
+      return res.status(400).json({ error: "Contraseña incorrecta" });
     }
 
-    const token = jwt.sign(
-      { id: usuario.id, email: usuario.email, rol: usuario.rol },
-      JWT_SECRET,
-      { expiresIn: "24h" }
-    );
-
     res.json({
-      mensaje: "Inicio de sesión exitoso",
-      token,
-      usuario: {
-        id: usuario.id,
-        nombre: usuario.nombre,
-        email: usuario.email,
-        rol: usuario.rol
-      }
+      mensaje: "Login OK",
+      usuario: { id: usuario.id, nombre: usuario.nombre, email: usuario.email }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error al iniciar sesión" });
+    console.error("Error en login:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Ver todos los usuarios (Útil para pruebas de la universidad)
+app.get("/api/usuarios", async (req, res) => {
+  try {
+    const { rows } = await pool.query("SELECT id, nombre, email, creado_en FROM usuarios");
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 
 // --- RUTAS DE PRODUCTOS ---
 
-// Obtener todos los productos (con soporte de filtros)
 app.get("/api/productos", async (req, res) => {
   try {
     const { buscar, categoria } = req.query;
@@ -111,7 +102,6 @@ app.get("/api/productos", async (req, res) => {
   }
 });
 
-// Obtener un solo producto por ID
 app.get("/api/productos/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -130,7 +120,6 @@ app.get("/api/productos/:id", async (req, res) => {
 
 // --- RUTAS DEL CARRITO ---
 
-// Obtener contenido del carrito por sessionId
 app.get("/api/carrito/:sessionId", async (req, res) => {
   try {
     const { sessionId } = req.params;
@@ -159,7 +148,6 @@ app.get("/api/carrito/:sessionId", async (req, res) => {
   }
 });
 
-// Agregar o actualizar producto en el carrito
 app.post("/api/carrito", async (req, res) => {
   try {
     const { sessionId, productoId, cantidad = 1 } = req.body;
@@ -191,4 +179,3 @@ app.post("/api/carrito", async (req, res) => {
 app.listen(PORT, () => {
   console.log(`Servidor NubePlay escuchando en http://localhost:${PORT}`);
 });
-
