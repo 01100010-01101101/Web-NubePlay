@@ -7,10 +7,16 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-app.use(cors());
+// Configuración de CORS permisiva para consumo local y desde cualquier origen
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json());
 
-// --- USUARIOS (SIMPLIFICADO) ---
+// --- USUARIOS (REGISTRO Y LOGIN) ---
 
 // Registro de usuario
 app.post("/api/auth/registro", async (req, res) => {
@@ -21,7 +27,13 @@ app.post("/api/auth/registro", async (req, res) => {
       return res.status(400).json({ error: "Faltan campos requeridos" });
     }
 
-    // Encriptar la contraseña por seguridad básica
+    // Verificar si el correo ya existe
+    const existe = await pool.query("SELECT id FROM usuarios WHERE email = $1", [email]);
+    if (existe.rows.length > 0) {
+      return res.status(400).json({ error: "El correo electrónico ya está registrado" });
+    }
+
+    // Encriptar la contraseña
     const passwordHash = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
@@ -30,7 +42,7 @@ app.post("/api/auth/registro", async (req, res) => {
     );
 
     console.log("Usuario insertado con éxito:", result.rows[0]);
-    res.json({ mensaje: "Usuario creado", usuario: result.rows[0] });
+    res.status(201).json({ mensaje: "Usuario creado con éxito", usuario: result.rows[0] });
   } catch (error) {
     console.error("Error al registrar:", error);
     res.status(500).json({ error: error.message });
@@ -177,5 +189,5 @@ app.post("/api/carrito", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor NubePlay escuchando en http://localhost:${PORT}`);
+  console.log(`Servidor NubePlay escuchando en puerto ${PORT}`);
 });
