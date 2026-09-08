@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", async () => {
-    const API_URL = "http://localhost:8080/api";
+    const API_URL = "https://web-nubeplay.onrender.com/api";
     const urlParams = new URLSearchParams(window.location.search);
     const productoId = parseInt(urlParams.get("id"));
 

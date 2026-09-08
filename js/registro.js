@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const API_URL = "https://web-nubeplay.onrender.com/api";
     const regionesComunas = [
         {
             region: "Región Metropolitana de Santiago",
@@ -18,14 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectRegion = document.getElementById("region");
     const selectComuna = document.getElementById("comuna");
 
-
     regionesComunas.forEach((item, index) => {
         const option = document.createElement("option");
         option.value = index;
         option.textContent = item.region;
         selectRegion.appendChild(option);
     });
-
 
     selectRegion.addEventListener("change", (e) => {
         const index = e.target.value;
@@ -44,9 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
     function validarRun(run) {
-
         const regRun = /^[0-9]{7,8}[0-9kK]{1}$/;
         return regRun.test(run);
     }
@@ -56,8 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return dominios.some(d => correo.toLowerCase().endsWith(d));
     }
 
-
-    form.addEventListener("submit", (e) => {
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
         
         let esValido = true;
@@ -72,7 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const comuna = document.getElementById("comuna");
         const direccion = document.getElementById("direccion");
 
-
         if (!validarRun(run.value.trim())) {
             run.classList.add("is-invalid");
             run.classList.remove("is-valid");
@@ -81,7 +76,6 @@ document.addEventListener("DOMContentLoaded", () => {
             run.classList.remove("is-invalid");
             run.classList.add("is-valid");
         }
-
 
         if (nombre.value.trim() === "" || nombre.value.length > 50) {
             nombre.classList.add("is-invalid");
@@ -92,7 +86,6 @@ document.addEventListener("DOMContentLoaded", () => {
             nombre.classList.add("is-valid");
         }
 
-
         if (apellidos.value.trim() === "" || apellidos.value.length > 100) {
             apellidos.classList.add("is-invalid");
             apellidos.classList.remove("is-valid");
@@ -101,7 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
             apellidos.classList.remove("is-invalid");
             apellidos.classList.add("is-valid");
         }
-
 
         if (!validarCorreo(correo.value.trim())) {
             correo.classList.add("is-invalid");
@@ -112,7 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
             correo.classList.add("is-valid");
         }
 
-
         if (password.value.length < 4 || password.value.length > 10) {
             password.classList.add("is-invalid");
             password.classList.remove("is-valid");
@@ -122,7 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
             password.classList.add("is-valid");
         }
 
-
         if (confirmPassword.value === "" || confirmPassword.value !== password.value) {
             confirmPassword.classList.add("is-invalid");
             confirmPassword.classList.remove("is-valid");
@@ -131,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
             confirmPassword.classList.remove("is-invalid");
             confirmPassword.classList.add("is-valid");
         }
-
 
         if (region.value === "") {
             region.classList.add("is-invalid");
@@ -160,9 +149,34 @@ document.addEventListener("DOMContentLoaded", () => {
             direccion.classList.add("is-valid");
         }
 
-        if (esValido) {
+        if (!esValido) return;
+
+        const nombreCompleto = `${nombre.value.trim()} ${apellidos.value.trim()}`;
+
+        try {
+            const res = await fetch(`${API_URL}/auth/registro`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nombre: nombreCompleto,
+                    email: correo.value.trim(),
+                    password: password.value.trim()
+                })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert("Error al registrar: " + (data.error || "Ocurrió un problema"));
+                return;
+            }
+
             alert("¡Registro completado con éxito!");
             window.location.href = "login.html";
+
+        } catch (error) {
+            console.error("Error en el registro:", error);
+            alert("No se pudo conectar con el servidor.");
         }
     });
 });

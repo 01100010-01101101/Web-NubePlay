@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const API_URL = "http://localhost:8080/api";
+    const API_URL = "https://web-nubeplay.onrender.com/api";
     const contenedor = document.getElementById("contenedorProductos");
     const inputBuscar = document.getElementById("inputBuscar");
     const selectCategoria = document.getElementById("selectCategoria");
