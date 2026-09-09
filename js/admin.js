@@ -49,6 +49,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnGenerarPass = document.getElementById("btnGenerarPass");
     const tablaComprasUsuario = document.getElementById("tablaComprasUsuario");
 
+    // ----------------------------------------------------
+    // FUNCION DE FORMATO DE MONEDA
+    // ----------------------------------------------------
+    function formatearPrecio(precio) {
+        return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(precio);
+    }
+
     function obtenerProductos() {
         return JSON.parse(localStorage.getItem("productos")) || [];
     }
@@ -86,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </td>
                 <td><span class="badge bg-secondary text-capitalize">${p.categoria}</span></td>
-                <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
+                <td>${formatearPrecio(p.precio)}</td>
                 <td>
                     <span class="badge ${p.stock < 5 ? 'bg-danger' : 'bg-success'}">
                         ${p.stock} un.
@@ -250,7 +257,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <td>${c.fecha}</td>
                                 <td>${c.producto}</td>
                                 <td class="text-center">${c.cantidad}</td>
-                                <td>$${Number(c.total).toLocaleString('es-CL')}</td>
+                                <td>${formatearPrecio(c.total)}</td>
                             `;
                             tablaComprasUsuario.appendChild(tr);
                         });
@@ -269,24 +276,30 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
 
             const id = document.getElementById("usrId").value;
+            const nombre = document.getElementById("usrNombre").value.trim();
+            const run = document.getElementById("usrRut").value.trim();
+            const correo = document.getElementById("usrCorreo").value.trim();
+            const telefono = document.getElementById("usrTelefono").value.trim();
+            const direccion = document.getElementById("usrDireccion").value.trim();
+            const password = document.getElementById("usrPassword").value;
+            const rol = document.getElementById("usrRol").value;
+            const estado = document.getElementById("usrEstado").value;
+
             let usuarios = obtenerUsuarios();
 
-            usuarios = usuarios.map(u => {
-                if (u.id == id) {
-                    return {
-                        ...u,
-                        nombre: document.getElementById("usrNombre").value.trim(),
-                        run: document.getElementById("usrRut").value.trim(),
-                        correo: document.getElementById("usrCorreo").value.trim(),
-                        telefono: document.getElementById("usrTelefono").value.trim(),
-                        direccion: document.getElementById("usrDireccion").value.trim(),
-                        password: document.getElementById("usrPassword").value.trim(),
-                        rol: document.getElementById("usrRol").value,
-                        estado: document.getElementById("usrEstado").value
-                    };
-                }
-                return u;
-            });
+            if (id) {
+                usuarios = usuarios.map(u => u.id == id ? {
+                    ...u,
+                    nombre,
+                    run,
+                    correo,
+                    telefono,
+                    direccion,
+                    password,
+                    rol,
+                    estado
+                } : u);
+            }
 
             localStorage.setItem("usuarios", JSON.stringify(usuarios));
             modalUsuario.hide();
@@ -294,7 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Carga inicial
+    // Carga inicial de datos de las tablas
     renderProductos();
     renderUsuarios();
 });

@@ -146,7 +146,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const itemEnCarrito = carrito.find(item => item.id === productoId);
 
         if (itemEnCarrito) {
-            itemEnCarrito.cantidad += 1;
+            if (itemEnCarrito.cantidad < productoTarget.stock) {
+                itemEnCarrito.cantidad += 1;
+            } else {
+                alert("Sin stock suficiente");
+                return;
+            }
+
         } else {
             carrito.push({
                 id: productoTarget.id,
