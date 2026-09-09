@@ -5,21 +5,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const comentario = document.getElementById("comentarioContacto");
     const contadorCaracteres = document.getElementById("contadorCaracteres");
 
-    comentario.addEventListener("input", () => {
-        contadorCaracteres.textContent = comentario.value.length;
-    });
-
     function validarCorreo(email) {
-        if (email.trim() === "") return true; 
-        if (email.length > 100) return false;
+        const valor = email.trim();
+
+        if (valor === "") {
+            return true;
+        }
+
+        if (valor.length > 100) {
+            return false;
+        }
 
         const dominiosPermitidos = ["@duoc.cl", "@profesor.duoc.cl", "@gmail.com"];
-        return dominiosPermitidos.some(dominio => email.toLowerCase().endsWith(dominio));
+        return dominiosPermitidos.some(dominio => valor.toLowerCase().endsWith(dominio));
     }
 
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-
+    function actualizarValidacion() {
         let esValido = true;
 
         if (nombre.value.trim() === "" || nombre.value.length > 100) {
@@ -35,11 +36,11 @@ document.addEventListener("DOMContentLoaded", () => {
             correo.classList.add("is-invalid");
             correo.classList.remove("is-valid");
             esValido = false;
-        } else {
+        } else if (correo.value.trim() !== "") {
             correo.classList.remove("is-invalid");
-            if (correo.value.trim() !== "") {
-                correo.classList.add("is-valid");
-            }
+            correo.classList.add("is-valid");
+        } else {
+            correo.classList.remove("is-invalid", "is-valid");
         }
 
         if (comentario.value.trim() === "" || comentario.value.length > 500) {
@@ -51,15 +52,31 @@ document.addEventListener("DOMContentLoaded", () => {
             comentario.classList.add("is-valid");
         }
 
-        if (esValido) {
-            alert("¡Mensaje enviado con éxito! Gracias por contactarte con NUBEPLAY.");
-            form.reset();
-            contadorCaracteres.textContent = "0";
-            
-            nombre.classList.remove("is-valid");
-            correo.classList.remove("is-valid");
-            comentario.classList.remove("is-valid");
+        return esValido;
+    }
+
+    comentario.addEventListener("input", () => {
+        contadorCaracteres.textContent = comentario.value.length;
+        actualizarValidacion();
+    });
+
+    [nombre, correo].forEach(input => {
+        input.addEventListener("input", actualizarValidacion);
+    });
+
+    form.addEventListener("submit", event => {
+        event.preventDefault();
+
+        if (!actualizarValidacion()) {
+            return;
         }
+
+        alert("¡Mensaje enviado con éxito! Gracias por contactarte con NUBEPLAY.");
+        form.reset();
+        contadorCaracteres.textContent = "0";
+
+        [nombre, correo, comentario].forEach(input => {
+            input.classList.remove("is-valid", "is-invalid");
+        });
     });
 });
-

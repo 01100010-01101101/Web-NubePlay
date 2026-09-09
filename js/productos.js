@@ -7,46 +7,52 @@ document.addEventListener("DOMContentLoaded", () => {
     const alertaCarrito = document.getElementById("alertaCarrito");
     const mensajeAlerta = document.getElementById("mensajeAlerta");
 
-
     const productosSemilla = [
         {
             id: 1,
+            codigo: "PS5-001",
             nombre: "PlayStation 5",
             categoria: "consolas",
             precio: 549990,
             stock: 10,
+            stockCritico: 3,
             descripcion: "Consola de última generación con SSD de alta velocidad y soporte 4K.",
             imagen: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=600&q=80"
         },
         {
             id: 2,
+            codigo: "XBX-001",
             nombre: "Xbox Series X",
             categoria: "consolas",
             precio: 529990,
             stock: 8,
+            stockCritico: 3,
             descripcion: "La consola Xbox más rápida y potente de la historia.",
             imagen: "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?auto=format&fit=crop&w=600&q=80"
         },
         {
             id: 3,
+            codigo: "ZEL-001",
             nombre: "The Legend of Zelda: Tears of the Kingdom",
             categoria: "juegos",
             precio: 59990,
             stock: 25,
+            stockCritico: 5,
             descripcion: "Aventura épica a través de las tierras y los cielos de Hyrule.",
             imagen: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80"
         },
         {
             id: 4,
+            codigo: "DS5-001",
             nombre: "Mando Inalámbrico DualSense PS5",
             categoria: "accesorios",
             precio: 69990,
             stock: 15,
+            stockCritico: 4,
             descripcion: "Retroalimentación háptica y gatillos adaptativos dinámicos.",
             imagen: "https://images.unsplash.com/photo-1592840496694-26d035b52b48?auto=format&fit=crop&w=600&q=80"
         }
     ];
-
 
     function leerJSON(clave, valorPorDefecto) {
         try {
@@ -57,7 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     function obtenerProductos() {
         let productos = leerJSON("productos", []);
         if (!Array.isArray(productos) || productos.length === 0) {
@@ -67,7 +72,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return productos;
     }
 
-
     function formatearPrecio(precio) {
         return new Intl.NumberFormat("es-CL", {
             style: "currency",
@@ -75,17 +79,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }).format(Number(precio) || 0);
     }
 
-
     function obtenerCarrito() {
         const carrito = leerJSON("carritoNubeplay", []);
         return Array.isArray(carrito) ? carrito : [];
     }
 
-
     function guardarCarrito(carrito) {
         localStorage.setItem("carritoNubeplay", JSON.stringify(carrito));
     }
-
 
     function actualizarContador() {
         const carrito = obtenerCarrito();
@@ -96,15 +97,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     function cargarCatalogo() {
         if (!contenedor) return;
-
 
         const productos = obtenerProductos();
         const buscar = inputBuscar ? inputBuscar.value.trim().toLowerCase() : "";
         const categoria = selectCategoria ? selectCategoria.value : "todas";
-
 
         const filtrados = productos.filter(producto => {
             const nombre = String(producto.nombre || "").toLowerCase();
@@ -114,10 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return coincideNombre && coincideCategoria;
         });
 
-
         renderizarProductos(contenedor, filtrados);
     }
-
 
     function cargarDestacados() {
         if (!destacados) return;
@@ -125,15 +121,19 @@ document.addEventListener("DOMContentLoaded", () => {
         renderizarProductos(destacados, productos, true);
     }
 
+    function obtenerRutaDetalle() {
+        return window.location.pathname.includes("/pages/")
+            ? "detalle-producto.html"
+            : "pages/detalle-producto.html";
+    }
+
 
     function crearTarjeta(producto, destacado = false) {
         const col = document.createElement("div");
         col.className = destacado ? "col-md-6 col-lg-3" : "col-md-6 col-lg-4";
 
-
         const stock = Number(producto.stock) || 0;
         const agotado = stock <= 0;
-
 
         col.innerHTML = `
             <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden">
@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="mt-3 pt-3 border-top">
                         <span class="fs-5 fw-bold text-primary d-block mb-3">${formatearPrecio(producto.precio)}</span>
                         <div class="d-grid gap-2">
-                            <a href="detalle-producto.html?id=${encodeURIComponent(producto.id)}" class="btn btn-outline-primary btn-sm fw-bold">
+                            <a href="${obtenerRutaDetalle()}?id=${encodeURIComponent(producto.id)}" class="btn btn-outline-primary btn-sm fw-bold">
                                 <i class="bi bi-eye me-1"></i> Ver detalle
                             </a>
                             <button class="btn btn-primary btn-sm fw-bold btn-agregar" data-id="${producto.id}" ${agotado ? "disabled" : ""}>
@@ -164,14 +164,11 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
         `;
 
-
         return col;
     }
 
-
     function renderizarProductos(contenedorDestino, productos, destacado = false) {
         contenedorDestino.innerHTML = "";
-
 
         if (productos.length === 0) {
             contenedorDestino.innerHTML = `
@@ -183,11 +180,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-
         productos.forEach(producto => {
             contenedorDestino.appendChild(crearTarjeta(producto, destacado));
         });
-
 
         contenedorDestino.querySelectorAll(".btn-agregar").forEach(boton => {
             boton.addEventListener("click", () => {
@@ -196,12 +191,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     function agregarAlCarrito(productoId) {
         const productos = obtenerProductos();
         const producto = productos.find(item => Number(item.id) === productoId);
         if (!producto) return;
-
 
         const stock = Number(producto.stock) || 0;
         if (stock <= 0) {
@@ -209,10 +202,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-
         const carrito = obtenerCarrito();
         const item = carrito.find(itemCarrito => Number(itemCarrito.id) === productoId);
-
 
         if (item) {
             if (Number(item.cantidad) >= stock) {
@@ -231,12 +222,10 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
 
-
         guardarCarrito(carrito);
         actualizarContador();
         mostrarAlerta(`"${producto.nombre}" añadido al carrito.`, "success");
     }
-
 
     function mostrarAlerta(mensaje, tipo = "success") {
         if (!alertaCarrito || !mensajeAlerta) return;
@@ -248,22 +237,16 @@ document.addEventListener("DOMContentLoaded", () => {
         window.__nubeplayAlertaTimeout = setTimeout(() => alertaCarrito.classList.add("d-none"), 2500);
     }
 
-
     function escaparHTML(texto) {
         const div = document.createElement("div");
         div.textContent = texto ?? "";
         return div.innerHTML;
     }
 
-
     if (inputBuscar) inputBuscar.addEventListener("input", cargarCatalogo);
     if (selectCategoria) selectCategoria.addEventListener("change", cargarCatalogo);
-
 
     cargarCatalogo();
     cargarDestacados();
     actualizarContador();
 });
-
-
-

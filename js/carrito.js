@@ -14,9 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnAplicarCupon = document.getElementById("btnAplicarCupon");
     const mensajeCupon = document.getElementById("mensajeCupon");
 
-
     let descuentoAplicado = false;
-
 
     function leerJSON(clave, valorPorDefecto) {
         try {
@@ -27,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     function formatearPrecio(precio) {
         return new Intl.NumberFormat("es-CL", {
             style: "currency",
@@ -35,23 +32,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }).format(Number(precio) || 0);
     }
 
-
     function obtenerCarrito() {
         const carrito = leerJSON("carritoNubeplay", []);
         return Array.isArray(carrito) ? carrito : [];
     }
-
 
     function obtenerProductos() {
         const productos = leerJSON("productos", []);
         return Array.isArray(productos) ? productos : [];
     }
 
-
     function guardarCarrito(carrito) {
         localStorage.setItem("carritoNubeplay", JSON.stringify(carrito));
     }
-
 
     function actualizarContador(total) {
         if (contadorCarrito) contadorCarrito.textContent = total;
@@ -60,11 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-
     function normalizarCarritoPorStock(carrito) {
         const productos = obtenerProductos();
         let huboCambios = false;
-
 
         const normalizado = carrito.reduce((resultado, item) => {
             const producto = productos.find(p => Number(p.id) === Number(item.id));
@@ -73,16 +64,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 return resultado;
             }
 
-
             const stock = Number(producto.stock) || 0;
             const cantidad = Math.min(Math.max(Number(item.cantidad) || 0, 0), stock);
-
 
             if (cantidad <= 0) {
                 huboCambios = true;
                 return resultado;
             }
-
 
             const itemNormalizado = {
                 ...item,
@@ -94,29 +82,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 cantidad
             };
 
-
             if (JSON.stringify(itemNormalizado) !== JSON.stringify(item)) {
                 huboCambios = true;
             }
-
 
             resultado.push(itemNormalizado);
             return resultado;
         }, []);
 
-
         if (huboCambios) guardarCarrito(normalizado);
         return normalizado;
     }
 
-
     function renderizarTabla() {
         if (!tablaCarrito) return;
 
-
         let carrito = normalizarCarritoPorStock(obtenerCarrito());
         tablaCarrito.innerHTML = "";
-
 
         if (carrito.length === 0) {
             carritoVacio?.classList.remove("d-none");
@@ -129,22 +111,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-
         carritoVacio?.classList.add("d-none");
         tablaCarrito.parentElement?.parentElement?.classList.remove("d-none");
         accionesCarrito?.classList.remove("d-none");
 
-
         let subtotalGeneral = 0;
         let totalUnidades = 0;
-
 
         carrito.forEach((prod) => {
             const subtotal = (Number(prod.precio) || 0) * (Number(prod.cantidad) || 0);
             const stock = obtenerStock(prod.id);
             subtotalGeneral += subtotal;
             totalUnidades += Number(prod.cantidad) || 0;
-
 
             const tr = document.createElement("tr");
             tr.innerHTML = `
@@ -180,7 +158,6 @@ document.addEventListener("DOMContentLoaded", () => {
             tablaCarrito.appendChild(tr);
         });
 
-
         let totalFinal = subtotalGeneral;
         if (descuentoAplicado) {
             const montoDescuento = subtotalGeneral * 0.10;
@@ -191,46 +168,38 @@ document.addEventListener("DOMContentLoaded", () => {
             filaDescuento?.classList.add("d-none");
         }
 
-
         if (resumenSubtotal) resumenSubtotal.textContent = formatearPrecio(subtotalGeneral);
         if (resumenTotal) resumenTotal.textContent = formatearPrecio(totalFinal);
         actualizarContador(totalUnidades);
         asignarEventosBotones();
     }
 
-
     function obtenerStock(id) {
         const producto = obtenerProductos().find(p => Number(p.id) === Number(id));
         return producto ? Number(producto.stock) || 0 : 0;
     }
-
 
     function asignarEventosBotones() {
         document.querySelectorAll(".btn-sumar").forEach(btn => {
             btn.addEventListener("click", () => cambiarCantidad(Number(btn.dataset.id), 1));
         });
 
-
         document.querySelectorAll(".btn-restar").forEach(btn => {
             btn.addEventListener("click", () => cambiarCantidad(Number(btn.dataset.id), -1));
         });
-
 
         document.querySelectorAll(".btn-eliminar").forEach(btn => {
             btn.addEventListener("click", () => eliminarProducto(Number(btn.dataset.id)));
         });
     }
 
-
     function cambiarCantidad(id, cambio) {
         const carrito = obtenerCarrito();
         const index = carrito.findIndex(item => Number(item.id) === id);
         if (index === -1) return;
 
-
         const stock = obtenerStock(id);
         const nuevaCantidad = (Number(carrito[index].cantidad) || 0) + cambio;
-
 
         if (nuevaCantidad < 1) return;
         if (nuevaCantidad > stock) {
@@ -238,19 +207,16 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-
         carrito[index].cantidad = nuevaCantidad;
         guardarCarrito(carrito);
         renderizarTabla();
     }
-
 
     function eliminarProducto(id) {
         const carrito = obtenerCarrito().filter(item => Number(item.id) !== id);
         guardarCarrito(carrito);
         renderizarTabla();
     }
-
 
     function mostrarAlerta(mensaje, tipo = "success") {
         if (!alerta) return;
@@ -261,11 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
         window.__nubeplayCarritoAlerta = setTimeout(() => alerta.classList.add("d-none"), 3500);
     }
 
-
     if (btnAplicarCupon) {
         btnAplicarCupon.addEventListener("click", () => {
             const codigo = (inputCupon?.value || "").trim().toUpperCase();
-
 
             if (codigo === "NUBEPLAY123") {
                 descuentoAplicado = true;
@@ -285,7 +249,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     if (btnVaciarCarrito) {
         btnVaciarCarrito.addEventListener("click", () => {
             if (!confirm("¿Estás seguro de que deseas vaciar tu carrito de compras?")) return;
@@ -297,18 +260,15 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-
     if (btnFinalizarCompra) {
         btnFinalizarCompra.addEventListener("click", () => {
             const usuarioSesion = leerJSON("usuario_nubeplay", null);
             const carrito = normalizarCarritoPorStock(obtenerCarrito());
 
-
             if (carrito.length === 0) {
                 mostrarAlerta("El carrito está vacío.", "warning");
                 return;
             }
-
 
             if (!usuarioSesion) {
                 alert("Debes iniciar sesión para completar la compra.");
@@ -316,15 +276,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-
             const productosStorage = obtenerProductos();
-
 
             const hayStockInsuficiente = carrito.some(item => {
                 const producto = productosStorage.find(p => Number(p.id) === Number(item.id));
                 return !producto || Number(item.cantidad) > (Number(producto.stock) || 0);
             });
-
 
             if (hayStockInsuficiente) {
                 mostrarAlerta("Uno o más productos ya no tienen stock suficiente. Revisa el carrito.", "danger");
@@ -332,18 +289,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-
             const fechaActual = new Date().toISOString().split("T")[0];
             let subtotalG = 0;
-
 
             carrito.forEach(item => {
                 subtotalG += (Number(item.precio) || 0) * (Number(item.cantidad) || 0);
             });
 
-
             const totalG = descuentoAplicado ? subtotalG * 0.90 : subtotalG;
-
 
             // Descontar stock.
             carrito.forEach(item => {
@@ -356,7 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
             localStorage.setItem("productos", JSON.stringify(productosStorage));
-
 
             // Registrar venta.
             const ventas = leerJSON("ventas", []);
@@ -372,7 +324,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             localStorage.setItem("ventas", JSON.stringify(nuevasVentas));
 
-
             // Actualizar historial del usuario.
             const nuevasComprasUsuario = carrito.map(item => ({
                 fecha: fechaActual,
@@ -380,7 +331,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 cantidad: Number(item.cantidad),
                 total: (Number(item.precio) || 0) * (Number(item.cantidad) || 0)
             }));
-
 
             const usuarios = leerJSON("usuarios", []);
             const usuariosArray = Array.isArray(usuarios) ? usuarios : [];
@@ -395,25 +345,21 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             localStorage.setItem("usuarios", JSON.stringify(usuariosActualizados));
 
-
             const sesionActualizada = {
                 ...usuarioSesion,
                 compras: [...(usuarioSesion.compras || []), ...nuevasComprasUsuario]
             };
             localStorage.setItem("usuario_nubeplay", JSON.stringify(sesionActualizada));
 
-
             localStorage.removeItem("carritoNubeplay");
             descuentoAplicado = false;
             if (inputCupon) inputCupon.value = "";
             if (mensajeCupon) mensajeCupon.textContent = "";
 
-
             mostrarAlerta("¡Gracias por tu compra! Tu pedido ha sido registrado con éxito.", "success");
             renderizarTabla();
         });
     }
-
 
     function escaparHTML(texto) {
         const div = document.createElement("div");
@@ -421,9 +367,5 @@ document.addEventListener("DOMContentLoaded", () => {
         return div.innerHTML;
     }
 
-
     renderizarTabla();
 });
-
-
-

@@ -141,10 +141,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // Normalizar comparación del rol
         const rolNormalizado = usuarioEncontrado.rol ? usuarioEncontrado.rol.toLowerCase() : "";
         const esAdmin = rolNormalizado === "admin" || rolNormalizado === "administrador";
+        const esVendedor = rolNormalizado === "vendedor";
 
         setTimeout(() => {
-            if (esAdmin) {
-                // Redirección saliendo de la carpeta 'pages/' hacia la raíz donde está admin.html
+            if (esAdmin || esVendedor) {
                 window.location.href = "admin.html";
             } else {
                 window.location.href = "productos.html";

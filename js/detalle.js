@@ -26,7 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function obtenerProductos() {
-        return leerJSON("productos", []);
+        const productos = leerJSON("productos", []);
+        return Array.isArray(productos) ? productos : [];
     }
 
     function obtenerCarrito() {
@@ -49,7 +50,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const contador = document.getElementById("contadorCarrito");
         const carrito = obtenerCarrito();
         const total = carrito.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+
         if (contador) contador.textContent = total;
+
         if (typeof window.actualizarNavbarCarrito === "function") {
             window.actualizarNavbarCarrito();
         }
@@ -57,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function mostrarAlerta(mensaje, tipo = "success") {
         if (!alertaDetalle || !mensajeAlerta) return;
+
         alertaDetalle.className = `alert alert-${tipo} alert-dismissible fade show`;
         mensajeAlerta.textContent = mensaje;
         alertaDetalle.classList.remove("d-none");
@@ -78,6 +82,70 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
     }
 
+    function escaparHTML(texto) {
+        const div = document.createElement("div");
+        div.textContent = texto ?? "";
+        return div.innerHTML;
+    }
+
+    function obtenerResenas() {
+        const resenas = leerJSON("resenasNubeplay", []);
+        return Array.isArray(resenas) ? resenas : [];
+    }
+
+    function guardarResenas(resenas) {
+        localStorage.setItem("resenasNubeplay", JSON.stringify(resenas));
+    }
+
+    function generarEstrellas(puntuacion) {
+        let html = "";
+
+        for (let i = 1; i <= 5; i += 1) {
+            html += i <= Number(puntuacion)
+                ? '<i class="bi bi-star-fill"></i>'
+                : '<i class="bi bi-star"></i>';
+        }
+
+        return html;
+    }
+
+    function renderizarResenas(idProducto) {
+        const listaResenas = document.getElementById("listaResenas");
+        if (!listaResenas) return;
+
+        const resenas = obtenerResenas().filter(
+            resena => Number(resena.productoId) === Number(idProducto)
+        );
+
+        if (resenas.length === 0) {
+            listaResenas.innerHTML = `
+                <div class="text-center py-3 text-muted">
+                    <i class="bi bi-chat-square-text fs-3 d-block mb-2"></i>
+                    <p class="mb-0">Este producto aún no tiene reseñas.</p>
+                    <small>Sé el primero en compartir tu opinión.</small>
+                </div>
+            `;
+            return;
+        }
+
+        listaResenas.innerHTML = resenas
+            .slice()
+            .reverse()
+            .map(resena => `
+                <div class="border-bottom py-3">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <div>
+                            <h6 class="fw-bold mb-1">${escaparHTML(resena.nombre)}</h6>
+                            <div class="text-warning small mb-2">${generarEstrellas(resena.puntuacion)}</div>
+                        </div>
+                        <small class="text-muted">${escaparHTML(resena.fecha)}</small>
+                    </div>
+                    <p class="mb-0 text-secondary">${escaparHTML(resena.comentario)}</p>
+                </div>
+            `)
+            .join("");
+    }
+
     const productos = obtenerProductos();
     const producto = productos.find(item => Number(item.id) === productoId);
 
@@ -93,11 +161,14 @@ document.addEventListener("DOMContentLoaded", () => {
     if (nombreProducto) nombreProducto.textContent = producto.nombre;
     if (categoriaBadge) categoriaBadge.textContent = producto.categoria || "Sin categoría";
     if (precioProducto) precioProducto.textContent = formatearPrecio(producto.precio);
-    if (descripcionProducto) descripcionProducto.textContent = producto.descripcion || "Sin descripción disponible.";
+    if (descripcionProducto) {
+        descripcionProducto.textContent = producto.descripcion || "Sin descripción disponible.";
+    }
 
     if (imagenPrincipal) {
         imagenPrincipal.src = producto.imagen || "https://via.placeholder.com/600x400?text=NUBEPLAY";
         imagenPrincipal.alt = producto.nombre;
+
         imagenPrincipal.onerror = () => {
             imagenPrincipal.src = "https://via.placeholder.com/600x400?text=NUBEPLAY";
         };
@@ -124,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnSumar) {
         btnSumar.addEventListener("click", () => {
             const actual = Number(inputCantidad.value) || 1;
+
             if (actual < stock) {
                 inputCantidad.value = String(actual + 1);
             } else {
@@ -140,6 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         btnAgregar.addEventListener("click", () => {
             const cantidad = Number(inputCantidad.value) || 1;
+
             if (stock <= 0) {
                 mostrarAlerta("Este producto está agotado.", "danger");
                 return;
@@ -178,5 +251,39 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    const formResena = document.getElementById("formResena");
+
+    if (formResena) {
+        formResena.addEventListener("submit", event => {
+            event.preventDefault();
+
+            const nombre = document.getElementById("nombreResena")?.value.trim();
+            const puntuacion = Number(document.getElementById("puntuacionResena")?.value || 0);
+            const comentario = document.getElementById("comentarioResena")?.value.trim();
+
+            if (!nombre || !comentario || puntuacion < 1 || puntuacion > 5) {
+                mostrarAlerta("Completa todos los campos de la reseña.", "warning");
+                return;
+            }
+
+            const resenas = obtenerResenas();
+
+            resenas.push({
+                id: Date.now(),
+                productoId: producto.id,
+                nombre,
+                puntuacion,
+                comentario,
+                fecha: new Date().toLocaleDateString("es-CL")
+            });
+
+            guardarResenas(resenas);
+            renderizarResenas(producto.id);
+            formResena.reset();
+            mostrarAlerta("Tu reseña fue publicada correctamente.", "success");
+        });
+    }
+
+    renderizarResenas(producto.id);
     actualizarContador();
 });

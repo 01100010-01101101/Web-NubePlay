@@ -1,26 +1,86 @@
 document.addEventListener("DOMContentLoaded", () => {
+
     const regionesComunas = [
         {
-            region: "Región Metropolitana de Santiago",
-            comunas: ["Santiago", "Puente Alto", "Maipú", "La Florida", "San Bernardo", "La Granja"]
+            region: "Arica y Parinacota",
+            comunas: ["Arica", "Camarones", "Putre", "General Lagos"]
         },
         {
-            region: "Región de Valparaíso",
-            comunas: ["Valparaíso", "Viña del Mar", "Quilpué", "Villa Alemana"]
+            region: "Tarapacá",
+            comunas: ["Iquique", "Alto Hospicio", "Pozo Almonte", "Pica"]
         },
         {
-            region: "Región del Biobío",
-            comunas: ["Concepción", "Talcahuano", "Los Ángeles", "Chillán"]
+            region: "Antofagasta",
+            comunas: ["Antofagasta", "Calama", "Tocopilla", "Mejillones"]
+        },
+        {
+            region: "Atacama",
+            comunas: ["Copiapó", "Caldera", "Vallenar", "Huasco"]
+        },
+        {
+            region: "Coquimbo",
+            comunas: ["La Serena", "Coquimbo", "Ovalle", "Illapel"]
+        },
+        {
+            region: "Valparaíso",
+            comunas: ["Valparaíso", "Viña del Mar", "Quilpué", "San Antonio"]
+        },
+        {
+            region: "Metropolitana de Santiago",
+            comunas: ["Santiago", "Maipú", "Puente Alto", "Las Condes", "La Florida"]
+        },
+        {
+            region: "O'Higgins",
+            comunas: ["Rancagua", "Machalí", "San Fernando", "Rengo"]
+        },
+        {
+            region: "Maule",
+            comunas: ["Talca", "Curicó", "Linares", "Constitución"]
+        },
+        {
+            region: "Ñuble",
+            comunas: ["Chillán", "San Carlos", "Bulnes", "Yungay"]
+        },
+        {
+            region: "Biobío",
+            comunas: ["Concepción", "Talcahuano", "Los Ángeles", "Coronel"]
+        },
+        {
+            region: "La Araucanía",
+            comunas: ["Temuco", "Villarrica", "Angol", "Pucón"]
+        },
+        {
+            region: "Los Ríos",
+            comunas: ["Valdivia", "La Unión", "Río Bueno", "Panguipulli"]
+        },
+        {
+            region: "Los Lagos",
+            comunas: ["Puerto Montt", "Osorno", "Castro", "Ancud"]
+        },
+        {
+            region: "Aysén",
+            comunas: ["Coyhaique", "Aysén", "Chile Chico", "Cochrane"]
+        },
+        {
+            region: "Magallanes",
+            comunas: ["Punta Arenas", "Puerto Natales", "Porvenir", "Cabo de Hornos"]
         }
     ];
-
 
     const form = document.getElementById("formRegistro");
     const selectRegion = document.getElementById("region");
     const selectComuna = document.getElementById("comuna");
 
+    const run = document.getElementById("run");
+    const nombre = document.getElementById("nombre");
+    const apellidos = document.getElementById("apellidos");
+    const correo = document.getElementById("correo");
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirmPassword");
+    const fechaNacimiento = document.getElementById("fechaNacimiento");
+    const direccion = document.getElementById("direccion");
 
-    // Cargar Regiones en el Select
+    // Cargar regiones desde el arreglo JavaScript.
     regionesComunas.forEach((item, index) => {
         const option = document.createElement("option");
         option.value = index;
@@ -28,15 +88,15 @@ document.addEventListener("DOMContentLoaded", () => {
         selectRegion.appendChild(option);
     });
 
+    // Cambiar comunas según la región seleccionada.
+    selectRegion.addEventListener("change", event => {
+        const index = event.target.value;
 
-    // Evento al cambiar de región
-    selectRegion.addEventListener("change", (e) => {
-        const index = e.target.value;
         selectComuna.innerHTML = '<option value="">Seleccione Comuna...</option>';
-
 
         if (index !== "") {
             selectComuna.disabled = false;
+
             regionesComunas[index].comunas.forEach(comuna => {
                 const option = document.createElement("option");
                 option.value = comuna;
@@ -48,173 +108,149 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-
-    function validarRun(run) {
-        const regRun = /^[0-9]{7,8}[0-9kK]{1}$/;
-        return regRun.test(run);
+    function limpiarRun(valor) {
+        return valor
+            .trim()
+            .replace(/[^0-9kK]/g, "")
+            .toUpperCase();
     }
 
+    function validarRun(valor) {
+        const runNormalizado = limpiarRun(valor);
 
-    function validarCorreo(correo) {
+        if (!/^\d{7,8}[0-9K]$/.test(runNormalizado)) {
+            return false;
+        }
+
+        const cuerpo = runNormalizado.slice(0, -1);
+        const dv = runNormalizado.slice(-1);
+        let suma = 0;
+        let multiplicador = 2;
+
+        for (let i = cuerpo.length - 1; i >= 0; i--) {
+            suma += Number(cuerpo[i]) * multiplicador;
+            multiplicador = multiplicador === 7 ? 2 : multiplicador + 1;
+        }
+
+        const resto = 11 - (suma % 11);
+        const dvCalculado = resto === 11 ? "0" : resto === 10 ? "K" : String(resto);
+
+        return dv === dvCalculado;
+    }
+
+    function validarCorreo(valor) {
         const dominios = ["@duoc.cl", "@profesor.duoc.cl", "@gmail.com"];
-        return dominios.some(d => correo.toLowerCase().endsWith(d));
+        const correoNormalizado = valor.trim().toLowerCase();
+
+        return correoNormalizado.length <= 100 &&
+            dominios.some(dominio => correoNormalizado.endsWith(dominio));
     }
 
+    function validarCampo(input, condicion) {
+        if (condicion) {
+            input.classList.remove("is-invalid");
+            input.classList.add("is-valid");
+            return true;
+        }
 
-    form.addEventListener("submit", (e) => {
-        e.preventDefault();
-       
+        input.classList.add("is-invalid");
+        input.classList.remove("is-valid");
+        return false;
+    }
+
+    function validarFormulario() {
         let esValido = true;
 
+        esValido = validarCampo(run, validarRun(run.value)) && esValido;
+        esValido = validarCampo(
+            nombre,
+            nombre.value.trim() !== "" && nombre.value.length <= 50
+        ) && esValido;
+        esValido = validarCampo(
+            apellidos,
+            apellidos.value.trim() !== "" && apellidos.value.length <= 100
+        ) && esValido;
+        esValido = validarCampo(correo, validarCorreo(correo.value)) && esValido;
+        esValido = validarCampo(
+            password,
+            password.value.length >= 4 && password.value.length <= 10
+        ) && esValido;
+        esValido = validarCampo(
+            confirmPassword,
+            confirmPassword.value !== "" && confirmPassword.value === password.value
+        ) && esValido;
+        esValido = validarCampo(selectRegion, selectRegion.value !== "") && esValido;
+        esValido = validarCampo(selectComuna, selectComuna.value !== "") && esValido;
+        esValido = validarCampo(
+            direccion,
+            direccion.value.trim() !== "" && direccion.value.length <= 300
+        ) && esValido;
 
-        const run = document.getElementById("run");
-        const nombre = document.getElementById("nombre");
-        const apellidos = document.getElementById("apellidos");
-        const correo = document.getElementById("correo");
-        const password = document.getElementById("password");
-        const confirmPassword = document.getElementById("confirmPassword");
-        const fechaNacimiento = document.getElementById("fechaNacimiento");
-        const region = document.getElementById("region");
-        const comuna = document.getElementById("comuna");
-        const direccion = document.getElementById("direccion");
+        return esValido;
+    }
 
+    // Validación en tiempo real.
+    [run, nombre, apellidos, correo, password, confirmPassword, selectRegion, selectComuna, direccion]
+        .forEach(input => {
+            input.addEventListener("input", validarFormulario);
+            input.addEventListener("change", validarFormulario);
+        });
 
-        // Validaciones
-        if (!validarRun(run.value.trim())) {
-            run.classList.add("is-invalid");
-            run.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            run.classList.remove("is-invalid");
-            run.classList.add("is-valid");
-        }
+    form.addEventListener("submit", event => {
+        event.preventDefault();
 
-
-        if (nombre.value.trim() === "" || nombre.value.length > 50) {
-            nombre.classList.add("is-invalid");
-            nombre.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            nombre.classList.remove("is-invalid");
-            nombre.classList.add("is-valid");
-        }
-
-
-        if (apellidos.value.trim() === "" || apellidos.value.length > 100) {
-            apellidos.classList.add("is-invalid");
-            apellidos.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            apellidos.classList.remove("is-invalid");
-            apellidos.classList.add("is-valid");
-        }
-
-
-        if (!validarCorreo(correo.value.trim())) {
-            correo.classList.add("is-invalid");
-            correo.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            correo.classList.remove("is-invalid");
-            correo.classList.add("is-valid");
-        }
-
-
-        if (password.value.length < 4 || password.value.length > 10) {
-            password.classList.add("is-invalid");
-            password.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            password.classList.remove("is-invalid");
-            password.classList.add("is-valid");
-        }
-
-
-        if (confirmPassword.value === "" || confirmPassword.value !== password.value) {
-            confirmPassword.classList.add("is-invalid");
-            confirmPassword.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            confirmPassword.classList.remove("is-invalid");
-            confirmPassword.classList.add("is-valid");
-        }
-
-
-        if (region.value === "") {
-            region.classList.add("is-invalid");
-            region.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            region.classList.remove("is-invalid");
-            region.classList.add("is-valid");
-        }
-
-
-        if (comuna.value === "") {
-            comuna.classList.add("is-invalid");
-            comuna.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            comuna.classList.remove("is-invalid");
-            comuna.classList.add("is-valid");
-        }
-
-
-        if (direccion.value.trim() === "" || direccion.value.length > 300) {
-            direccion.classList.add("is-invalid");
-            direccion.classList.remove("is-valid");
-            esValido = false;
-        } else {
-            direccion.classList.remove("is-invalid");
-            direccion.classList.add("is-valid");
-        }
-
-
-        if (!esValido) return;
-
-
-        // Recuperar usuarios existentes en localStorage
-        const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-
-
-        // Validar si el correo o RUN ya existen
-        const existeCorreo = usuarios.some(u => u.correo === correo.value.trim());
-        if (existeCorreo) {
-            alert("El correo electrónico ya se encuentra registrado.");
-            correo.classList.add("is-invalid");
+        if (!validarFormulario()) {
             return;
         }
 
+        const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+        const runNormalizado = limpiarRun(run.value);
+        const correoNormalizado = correo.value.trim().toLowerCase();
 
-        // Crear objeto de nuevo usuario
+        const existeCorreo = usuarios.some(
+            usuario => usuario.correo?.toLowerCase() === correoNormalizado
+        );
+
+        if (existeCorreo) {
+            correo.classList.add("is-invalid");
+            correo.classList.remove("is-valid");
+            alert("El correo electrónico ya se encuentra registrado.");
+            return;
+        }
+
+        const existeRun = usuarios.some(
+            usuario => limpiarRun(usuario.run) === runNormalizado
+        );
+
+        if (existeRun) {
+            run.classList.add("is-invalid");
+            run.classList.remove("is-valid");
+            alert("El RUN ya se encuentra registrado.");
+            return;
+        }
+
+        const regionSeleccionada = regionesComunas[selectRegion.value];
+
         const nuevoUsuario = {
             id: Date.now(),
-            run: run.value.trim(),
-            nombre: `${nombre.value.trim()} ${apellidos.value.trim()}`,
-            correo: correo.value.trim(),
+            run: runNormalizado,
+            nombre: nombre.value.trim(),
+            apellidos: apellidos.value.trim(),
+            correo: correoNormalizado,
             password: password.value.trim(),
             fechaNacimiento: fechaNacimiento.value,
-            region: regionesComunas[region.value].region,
-            comuna: comuna.value,
-            direccion: `${direccion.value.trim()}, ${comuna.value}, ${regionesComunas[region.value].region}`,
-            telefono: "+56 9 1234 5678", // Teléfono por defecto para mockup
+            region: regionSeleccionada.region,
+            comuna: selectComuna.value,
+            direccion: direccion.value.trim(),
             rol: "Cliente",
             estado: "Activo",
             compras: []
         };
 
-
-        // Guardar en localStorage
         usuarios.push(nuevoUsuario);
         localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
 
         alert("¡Registro completado con éxito!");
         window.location.href = "login.html";
     });
 });
-
-
-
-
-
