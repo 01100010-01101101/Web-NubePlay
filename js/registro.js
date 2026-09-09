@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const API_URL = "https://web-nubeplay.onrender.com/api";
     const regionesComunas = [
         {
             region: "Región Metropolitana de Santiago",
@@ -19,6 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const selectRegion = document.getElementById("region");
     const selectComuna = document.getElementById("comuna");
 
+    // Cargar Regiones en el Select
     regionesComunas.forEach((item, index) => {
         const option = document.createElement("option");
         option.value = index;
@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
         selectRegion.appendChild(option);
     });
 
+    // Evento al cambiar de región
     selectRegion.addEventListener("change", (e) => {
         const index = e.target.value;
         selectComuna.innerHTML = '<option value="">Seleccione Comuna...</option>';
@@ -53,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return dominios.some(d => correo.toLowerCase().endsWith(d));
     }
 
-    form.addEventListener("submit", async (e) => {
+    form.addEventListener("submit", (e) => {
         e.preventDefault();
         
         let esValido = true;
@@ -64,10 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const correo = document.getElementById("correo");
         const password = document.getElementById("password");
         const confirmPassword = document.getElementById("confirmPassword");
+        const fechaNacimiento = document.getElementById("fechaNacimiento");
         const region = document.getElementById("region");
         const comuna = document.getElementById("comuna");
         const direccion = document.getElementById("direccion");
 
+        // Validaciones
         if (!validarRun(run.value.trim())) {
             run.classList.add("is-invalid");
             run.classList.remove("is-valid");
@@ -151,32 +154,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!esValido) return;
 
-        const nombreCompleto = `${nombre.value.trim()} ${apellidos.value.trim()}`;
+        // Recuperar usuarios existentes en localStorage
+        const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
-        try {
-            const res = await fetch(`${API_URL}/auth/registro`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    nombre: nombreCompleto,
-                    email: correo.value.trim(),
-                    password: password.value.trim()
-                })
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert("Error al registrar: " + (data.error || "Ocurrió un problema"));
-                return;
-            }
-
-            alert("¡Registro completado con éxito!");
-            window.location.href = "login.html";
-
-        } catch (error) {
-            console.error("Error en el registro:", error);
-            alert("No se pudo conectar con el servidor.");
+        // Validar si el correo o RUN ya existen
+        const existeCorreo = usuarios.some(u => u.correo === correo.value.trim());
+        if (existeCorreo) {
+            alert("El correo electrónico ya se encuentra registrado.");
+            correo.classList.add("is-invalid");
+            return;
         }
+
+        // Crear objeto de nuevo usuario
+        const nuevoUsuario = {
+            id: Date.now(),
+            run: run.value.trim(),
+            nombre: `${nombre.value.trim()} ${apellidos.value.trim()}`,
+            correo: correo.value.trim(),
+            password: password.value.trim(),
+            fechaNacimiento: fechaNacimiento.value,
+            region: regionesComunas[region.value].region,
+            comuna: comuna.value,
+            direccion: `${direccion.value.trim()}, ${comuna.value}, ${regionesComunas[region.value].region}`,
+            telefono: "+56 9 1234 5678", // Teléfono por defecto para mockup
+            rol: "Cliente",
+            estado: "Activo",
+            compras: []
+        };
+
+        // Guardar en localStorage
+        usuarios.push(nuevoUsuario);
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+        alert("¡Registro completado con éxito!");
+        window.location.href = "login.html";
     });
 });
+

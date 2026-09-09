@@ -1,174 +1,303 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // Lista base expandida con todos los atributos de perfil
-    const usuariosBase = [
+    const productosIniciales = [
         {
             id: 1,
-            nombre: "Admin Nubeplay",
-            rut: "11.111.111-1",
-            correo: "admin@duoc.cl",
-            telefono: "+56 9 8765 4321",
-            direccion: "Av. Central 456, Santiago",
-            password: "adminPassword123",
-            rol: "Administrador",
-            estado: "Activo",
-            compras: [
-                { fecha: "2026-02-15", producto: "Consola PlayStation 5", cantidad: 1, total: 549990 }
-            ]
+            nombre: "PlayStation 5 Console",
+            categoria: "consolas",
+            precio: 549990,
+            stock: 8,
+            descripcion: "Consola PS5 con lector de discos Ultra HD Blu-ray.",
+            imagen: "https://via.placeholder.com/150"
         },
         {
             id: 2,
-            nombre: "Juan Pérez",
-            rut: "18.654.321-K",
-            correo: "juan.perez@gmail.com",
-            telefono: "+56 9 1234 5678",
-            direccion: "Pasaje Los Olivos 789, Maipú",
-            password: "perezClave2026",
-            rol: "Cliente",
-            estado: "Activo",
-            compras: [
-                { fecha: "2026-03-01", producto: "Grand Theft Auto VI", cantidad: 1, total: 69990 },
-                { fecha: "2026-03-01", producto: "Mando Inalámbrico DualSense", cantidad: 1, total: 64990 }
-            ]
-        },
-        {
-            id: 3,
-            nombre: "María González",
-            rut: "19.876.543-2",
-            correo: "m.gonzalez@duoc.cl",
-            telefono: "+56 9 4321 8765",
-            direccion: "Calle Las Lilas 321, Providencia",
-            password: "mariaSecure99",
-            rol: "Cliente",
-            estado: "Activo",
-            compras: []
+            nombre: "Meteora / Linkin Park (Special Edition)",
+            categoria: "juegos",
+            precio: 29990,
+            stock: 3,
+            descripcion: "Edición especial con bonus tracks.",
+            imagen: "https://via.placeholder.com/150"
         }
     ];
 
-    const tablaUsuariosAdmin = document.getElementById("tablaUsuariosAdmin");
-    const formUsuario = document.getElementById("formUsuario");
-    const modalUsuarioBs = new bootstrap.Modal(document.getElementById("modalUsuario"));
-    const btnGenerarPass = document.getElementById("btnGenerarPass");
+    const usuariosIniciales = [
+        {
+            id: 101,
+            run: "19011022K",
+            nombre: "Juan Pérez",
+            correo: "juan.perez@duoc.cl",
+            password: "1234",
+            telefono: "+56 9 8765 4321",
+            direccion: "Av. Siempre Viva 742, Santiago",
+            rol: "Cliente",
+            estado: "Activo",
+            compras: [
+                { fecha: "2026-03-01", producto: "PlayStation 5 Console", cantidad: 1, total: 549990 }
+            ]
+        }
+    ];
 
-    function formatearPrecio(precio) {
-        return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(precio);
+    if (!localStorage.getItem("productos")) {
+        localStorage.setItem("productos", JSON.stringify(productosIniciales));
+    }
+    if (!localStorage.getItem("usuarios")) {
+        localStorage.setItem("usuarios", JSON.stringify(usuariosIniciales));
+    }
+    const tablaProductos = document.getElementById("tablaProductosAdmin");
+    const tablaUsuarios = document.getElementById("tablaUsuariosAdmin");
+    const totalProductosCount = document.getElementById("totalProductosCount");
+    const totalUsuariosCount = document.getElementById("totalUsuariosCount");
+    const stockBajoCount = document.getElementById("stockBajoCount");
+
+    const modalProducto = new bootstrap.Modal(document.getElementById("modalProducto"));
+    const formProducto = document.getElementById("formProducto");
+    const btnNuevoProducto = document.getElementById("btnNuevoProducto");
+
+    const modalUsuario = new bootstrap.Modal(document.getElementById("modalUsuario"));
+    const formUsuario = document.getElementById("formUsuario");
+    const btnGenerarPass = document.getElementById("btnGenerarPass");
+    const tablaComprasUsuario = document.getElementById("tablaComprasUsuario");
+
+
+    function obtenerProductos() {
+        return JSON.parse(localStorage.getItem("productos")) || [];
     }
 
     function obtenerUsuarios() {
-        const usrs = localStorage.getItem("usuariosNubeplay");
-        if (!usrs) {
-            localStorage.setItem("usuariosNubeplay", JSON.stringify(usuariosBase));
-            return usuariosBase;
-        }
-        return JSON.parse(usrs);
+        return JSON.parse(localStorage.getItem("usuarios")) || [];
     }
 
-    function guardarUsuarios(usrs) {
-        localStorage.setItem("usuariosNubeplay", JSON.stringify(usrs));
-    }
-
-    function renderizarUsuariosAdmin() {
+    function actualizarEstadisticas() {
+        const productos = obtenerProductos();
         const usuarios = obtenerUsuarios();
-        tablaUsuariosAdmin.innerHTML = "";
+
+        totalProductosCount.textContent = productos.length;
+        totalUsuariosCount.textContent = usuarios.length;
+
+        const conStockBajo = productos.filter(p => p.stock < 5).length;
+        stockBajoCount.textContent = conStockBajo;
+    }
+
+    function renderProductos() {
+        const productos = obtenerProductos();
+        tablaProductos.innerHTML = "";
+
+        productos.forEach(p => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td class="ps-3 fw-bold">#${p.id}</td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <img src="${p.imagen}" alt="${p.nombre}" width="40" height="40" class="rounded me-2 object-fit-cover" onerror="this.src='https://via.placeholder.com/40'">
+                        <div>
+                            <span class="fw-semibold d-block">${p.nombre}</span>
+                        </div>
+                    </div>
+                </td>
+                <td><span class="badge bg-secondary text-capitalize">${p.categoria}</span></td>
+                <td>$${Number(p.precio).toLocaleString('es-CL')}</td>
+                <td>
+                    <span class="badge ${p.stock < 5 ? 'bg-danger' : 'bg-success'}">
+                        ${p.stock} un.
+                    </span>
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary me-1 btn-editar-prod" data-id="${p.id}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-eliminar-prod" data-id="${p.id}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            `;
+            tablaProductos.appendChild(tr);
+        });
+
+        actualizarEstadisticas();
+    }
+
+    function renderUsuarios() {
+        const usuarios = obtenerUsuarios();
+        tablaUsuarios.innerHTML = "";
 
         usuarios.forEach(u => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="ps-3 fw-bold">#${u.id}</td>
-                <td>
-                    <span class="fw-semibold d-block">${u.nombre}</span>
-                    <small class="text-muted">${u.rut || 'Sin RUT'}</small>
-                </td>
+                <td>${u.nombre}</td>
                 <td>${u.correo}</td>
-                <td><span class="badge ${u.rol === 'Administrador' ? 'bg-primary' : 'bg-secondary'}">${u.rol}</span></td>
-                <td><span class="badge ${u.estado === 'Activo' ? 'bg-success' : 'bg-danger'}">${u.estado}</span></td>
+                <td>
+                    <span class="badge ${u.rol === 'Administrador' ? 'bg-danger' : 'bg-info'}">
+                        ${u.rol}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge ${u.estado === 'Activo' ? 'bg-success' : 'bg-secondary'}">
+                        ${u.estado}
+                    </span>
+                </td>
                 <td class="text-center">
-                    <button class="btn btn-sm btn-outline-info btn-ver-usr" data-id="${u.id}">
-                        <i class="bi bi-pencil-square me-1"></i> Expediente
+                    <button class="btn btn-sm btn-outline-primary btn-editar-usr" data-id="${u.id}">
+                        <i class="bi bi-eye"></i> Ver / Editar
                     </button>
                 </td>
             `;
-            tablaUsuariosAdmin.appendChild(tr);
+            tablaUsuarios.appendChild(tr);
         });
 
-        document.querySelectorAll(".btn-ver-usr").forEach(btn => {
-            btn.addEventListener("click", (e) => abrirModalUsuario(parseInt(e.currentTarget.dataset.id)));
-        });
+        actualizarEstadisticas();
     }
 
-    // Abrir Modal de Expediente Completo
-    function abrirModalUsuario(id) {
-        const usuarios = obtenerUsuarios();
-        const usr = usuarios.find(u => u.id === id);
-        if (!usr) return;
+    btnNuevoProducto.addEventListener("click", () => {
+        formProducto.reset();
+        document.getElementById("prodId").value = "";
+        document.getElementById("modalProductoTitulo").textContent = "Agregar Producto";
+    });
 
-        document.getElementById("usrId").value = usr.id;
-        document.getElementById("usrNombre").value = usr.nombre || "";
-        document.getElementById("usrRut").value = usr.rut || "";
-        document.getElementById("usrCorreo").value = usr.correo || "";
-        document.getElementById("usrTelefono").value = usr.telefono || "";
-        document.getElementById("usrDireccion").value = usr.direccion || "";
-        document.getElementById("usrPassword").value = usr.password || "";
-        document.getElementById("usrRol").value = usr.rol || "Cliente";
-        document.getElementById("usrEstado").value = usr.estado || "Activo";
-
-        // Cargar Historial de Compras
-        const tablaCompras = document.getElementById("tablaComprasUsuario");
-        tablaCompras.innerHTML = "";
-
-        if (usr.compras && usr.compras.length > 0) {
-            usr.compras.forEach(c => {
-                const tr = document.createElement("tr");
-                tr.innerHTML = `
-                    <td>${c.fecha}</td>
-                    <td class="fw-semibold">${c.producto}</td>
-                    <td class="text-center">${c.cantidad}</td>
-                    <td class="fw-bold text-primary">${formatearPrecio(c.total)}</td>
-                `;
-                tablaCompras.appendChild(tr);
-            });
-        } else {
-            tablaCompras.innerHTML = `
-                <tr>
-                    <td colspan="4" class="text-center text-muted py-3">Este usuario no registra historial de compras.</td>
-                </tr>
-            `;
-        }
-
-        modalUsuarioBs.show();
-    }
-
-    // Generador opcional de contraseñas aleatorias
-    if (btnGenerarPass) {
-        btnGenerarPass.addEventListener("click", () => {
-            const passAleatoria = Math.random().toString(36).slice(-8) + "Np!";
-            document.getElementById("usrPassword").value = passAleatoria;
-        });
-    }
-
-    // Guardar cambios de usuario
-    formUsuario.addEventListener("submit", (e) => {
+    formProducto.addEventListener("submit", (e) => {
         e.preventDefault();
 
-        const idVal = parseInt(document.getElementById("usrId").value);
-        let usuarios = obtenerUsuarios();
-        const index = usuarios.findIndex(u => u.id === idVal);
+        const id = document.getElementById("prodId").value;
+        const nombre = document.getElementById("prodNombre").value.trim();
+        const categoria = document.getElementById("prodCategoria").value;
+        const precio = Number(document.getElementById("prodPrecio").value);
+        const stock = Number(document.getElementById("prodStock").value);
+        const descripcion = document.getElementById("prodDescripcion").value.trim();
+        const imagen = document.getElementById("prodImagen").value.trim();
 
-        if (index !== -1) {
-            usuarios[index].nombre = document.getElementById("usrNombre").value.trim();
-            usuarios[index].rut = document.getElementById("usrRut").value.trim();
-            usuarios[index].correo = document.getElementById("usrCorreo").value.trim();
-            usuarios[index].telefono = document.getElementById("usrTelefono").value.trim();
-            usuarios[index].direccion = document.getElementById("usrDireccion").value.trim();
-            usuarios[index].password = document.getElementById("usrPassword").value.trim();
-            usuarios[index].rol = document.getElementById("usrRol").value;
-            usuarios[index].estado = document.getElementById("usrEstado").value;
+        let productos = obtenerProductos();
 
-            guardarUsuarios(usuarios);
-            modalUsuarioBs.hide();
-            renderizarUsuariosAdmin();
+        if (id) {
+            // Editar existente
+            productos = productos.map(p => p.id == id ? { id: Number(id), nombre, categoria, precio, stock, descripcion, imagen } : p);
+        } else {
+            // Crear nuevo
+            const nuevoProd = {
+                id: Date.now(),
+                nombre,
+                categoria,
+                precio,
+                stock,
+                descripcion,
+                imagen
+            };
+            productos.push(nuevoProd);
+        }
+
+        localStorage.setItem("productos", JSON.stringify(productos));
+        modalProducto.hide();
+        renderProductos();
+    });
+
+    tablaProductos.addEventListener("click", (e) => {
+        const btnEdit = e.target.closest(".btn-editar-prod");
+        const btnDelete = e.target.closest(".btn-eliminar-prod");
+
+        if (btnEdit) {
+            const id = btnEdit.dataset.id;
+            const producto = obtenerProductos().find(p => p.id == id);
+
+            if (producto) {
+                document.getElementById("prodId").value = producto.id;
+                document.getElementById("prodNombre").value = producto.nombre;
+                document.getElementById("prodCategoria").value = producto.categoria;
+                document.getElementById("prodPrecio").value = producto.precio;
+                document.getElementById("prodStock").value = producto.stock;
+                document.getElementById("prodDescripcion").value = producto.descripcion;
+                document.getElementById("prodImagen").value = producto.imagen;
+
+                document.getElementById("modalProductoTitulo").textContent = "Editar Producto";
+                modalProducto.show();
+            }
+        }
+
+        if (btnDelete) {
+            const id = btnDelete.dataset.id;
+            if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+                let productos = obtenerProductos().filter(p => p.id != id);
+                localStorage.setItem("productos", JSON.stringify(productos));
+                renderProductos();
+            }
         }
     });
 
-    renderizarUsuariosAdmin();
+    // ----------------------------------------------------
+    // GESTIÓN DE USUARIOS Y COMPRAS
+    // ----------------------------------------------------
+    btnGenerarPass.addEventListener("click", () => {
+        const randomPass = Math.random().toString(36).slice(-6);
+        document.getElementById("usrPassword").value = randomPass;
+    });
+
+    tablaUsuarios.addEventListener("click", (e) => {
+        const btnEdit = e.target.closest(".btn-editar-usr");
+        if (btnEdit) {
+            const id = btnEdit.dataset.id;
+            const usuario = obtenerUsuarios().find(u => u.id == id);
+
+            if (usuario) {
+                document.getElementById("usrId").value = usuario.id;
+                document.getElementById("usrNombre").value = usuario.nombre;
+                document.getElementById("usrRut").value = usuario.run || "";
+                document.getElementById("usrCorreo").value = usuario.correo;
+                document.getElementById("usrTelefono").value = usuario.telefono || "";
+                document.getElementById("usrDireccion").value = usuario.direccion || "";
+                document.getElementById("usrPassword").value = usuario.password;
+                document.getElementById("usrRol").value = usuario.rol;
+                document.getElementById("usrEstado").value = usuario.estado;
+
+                // Render Historial Compras
+                tablaComprasUsuario.innerHTML = "";
+                if (usuario.compras && usuario.compras.length > 0) {
+                    usuario.compras.forEach(c => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td>${c.fecha}</td>
+                            <td>${c.producto}</td>
+                            <td class="text-center">${c.cantidad}</td>
+                            <td>$${Number(c.total).toLocaleString('es-CL')}</td>
+                        `;
+                        tablaComprasUsuario.appendChild(tr);
+                    });
+                } else {
+                    tablaComprasUsuario.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No registra compras realizas.</td></tr>`;
+                }
+
+                modalUsuario.show();
+            }
+        }
+    });
+
+    formUsuario.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById("usrId").value;
+        let usuarios = obtenerUsuarios();
+
+        usuarios = usuarios.map(u => {
+            if (u.id == id) {
+                return {
+                    ...u,
+                    nombre: document.getElementById("usrNombre").value.trim(),
+                    run: document.getElementById("usrRut").value.trim(),
+                    correo: document.getElementById("usrCorreo").value.trim(),
+                    telefono: document.getElementById("usrTelefono").value.trim(),
+                    direccion: document.getElementById("usrDireccion").value.trim(),
+                    password: document.getElementById("usrPassword").value.trim(),
+                    rol: document.getElementById("usrRol").value,
+                    estado: document.getElementById("usrEstado").value
+                };
+            }
+            return u;
+        });
+
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
+        modalUsuario.hide();
+        renderUsuarios();
+    });
+
+    // Carga inicial
+    renderProductos();
+    renderUsuarios();
 });
 
