@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
             tr.innerHTML = `
                 <td class="ps-4">
                     <div class="d-flex align-items-center">
-                        <img src="${prod.imagen}" alt="${prod.nombre}" class="rounded-3 me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                        <img src="${prod.imagen}" alt="${prod.nombre}" class="rounded-3 me-3" style="width: 50px; height: 50px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/50'">
                         <div>
                             <h6 class="mb-0 fw-bold">${prod.nombre}</h6>
                             <small class="text-capitalize text-muted">${prod.categoria}</small>
@@ -177,7 +177,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            // Actualizar stock de los productos
+            const fechaActual = new Date().toISOString().split("T")[0];
+
+            // 1. Descontar Stock de Productos
             let productosStorage = JSON.parse(localStorage.getItem("productos")) || [];
             carrito.forEach(item => {
                 const index = productosStorage.findIndex(p => p.id === item.id);
@@ -187,35 +189,67 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             localStorage.setItem("productos", JSON.stringify(productosStorage));
 
-            // Guardar Venta
+            // 2. Registrar Venta Global
             let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
             const subtotalG = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
             const totalG = descuentoAplicado ? subtotalG * 0.90 : subtotalG;
 
             const nuevaVenta = {
                 id: Date.now(),
+                usuarioId: usuarioSesion.id,
                 cliente: usuarioSesion.nombre,
                 correo: usuarioSesion.correo,
-                fecha: new Date().toLocaleDateString("es-CL"),
+                fecha: fechaActual,
                 items: carrito,
                 total: totalG
             };
             ventas.push(nuevaVenta);
             localStorage.setItem("ventas", JSON.stringify(ventas));
 
-            // Limpiar carrito
+            // 3. VINCULAR COMPRAS AL HISTORIAL DEL USUARIO ("usuarios")
+            const nuevasComprasUsuario = carrito.map(item => ({
+                fecha: fechaActual,
+                producto: item.nombre,
+                cantidad: item.cantidad,
+                total: item.precio * item.cantidad
+            }));
+
+            const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+            const usuariosActualizados = usuarios.map(usr => {
+                if (usr.id === usuarioSesion.id || usr.correo === usuarioSesion.correo) {
+                    const comprasPrevias = usr.compras || [];
+                    return {
+                        ...usr,
+                        compras: [...comprasPrevias, ...nuevasComprasUsuario]
+                    };
+                }
+                return usr;
+            });
+            localStorage.setItem("usuarios", JSON.stringify(usuariosActualizados));
+
+            // 4. Actualizar la sesión activa (usuario_nubeplay)
+            if (!usuarioSesion.compras) usuarioSesion.compras = [];
+            usuarioSesion.compras.push(...nuevasComprasUsuario);
+            localStorage.setItem("usuario_nubeplay", JSON.stringify(usuarioSesion));
+
+            // 5. Limpiar Carrito y Resetear Estados
             localStorage.removeItem("carritoNubeplay");
             descuentoAplicado = false;
+            if (inputCupon) inputCupon.value = "";
+            if (mensajeCupon) mensajeCupon.textContent = "";
 
-            alerta.className = "alert alert-success";
-            alerta.textContent = "¡Gracias por tu compra! Tu pedido ha sido registrado con éxito.";
-            alerta.classList.remove("d-none");
+            // 6. Alerta y Notificación
+            if (alerta) {
+                alerta.className = "alert alert-success";
+                alerta.textContent = "¡Gracias por tu compra! Tu pedido ha sido registrado con éxito.";
+                alerta.classList.remove("d-none");
+
+                setTimeout(() => {
+                    alerta.classList.add("d-none");
+                }, 4000);
+            }
 
             renderizarTabla();
-
-            setTimeout(() => {
-                alerta.classList.add("d-none");
-            }, 4000);
         });
     }
 
