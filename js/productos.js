@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const API_URL = "https://web-nubeplay.onrender.com/api";
     const contenedor = document.getElementById("contenedorProductos");
     const inputBuscar = document.getElementById("inputBuscar");
     const selectCategoria = document.getElementById("selectCategoria");
@@ -7,57 +6,88 @@ document.addEventListener("DOMContentLoaded", () => {
     const alertaCarrito = document.getElementById("alertaCarrito");
     const mensajeAlerta = document.getElementById("mensajeAlerta");
 
+    // Catálogo 
+    const productosSemilla = [
+        {
+            id: 1,
+            nombre: "PlayStation 5",
+            categoria: "consolas",
+            precio: 549990,
+            stock: 10,
+            descripcion: "Consola de última generación con SSD de alta velocidad y soporte 4K.",
+            imagen: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=600&q=80"
+        },
+        {
+            id: 2,
+            nombre: "Xbox Series X",
+            categoria: "consolas",
+            precio: 529990,
+            stock: 8,
+            descripcion: "La consola Xbox más rápida y potente de la historia.",
+            imagen: "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?auto=format&fit=crop&w=600&q=80"
+        },
+        {
+            id: 3,
+            nombre: "The Legend of Zelda: Tears of the Kingdom",
+            categoria: "juegos",
+            precio: 59990,
+            stock: 25,
+            descripcion: "Aventura épica a través de las tierras y los cielos de Hyrule.",
+            imagen: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=600&q=80"
+        },
+        {
+            id: 4,
+            nombre: "Mando Inalámbrico DualSense PS5",
+            categoria: "accesorios",
+            precio: 69990,
+            stock: 15,
+            descripcion: "Retroalimentación háptica y gatillos adaptativos dinámicos.",
+            imagen: "https://images.unsplash.com/photo-1592840496694-26d035b52b48?auto=format&fit=crop&w=600&q=80"
+        }
+    ];
+
+    function obtenerProductos() {
+        let prods = JSON.parse(localStorage.getItem("productos"));
+        if (!prods || prods.length === 0) {
+            prods = productosSemilla;
+            localStorage.setItem("productos", JSON.stringify(prods));
+        }
+        return prods;
+    }
+
     function formatearPrecio(precio) {
         return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(precio);
     }
 
-    function obtenerSessionId() {
-        let sessionId = localStorage.getItem("nubeplay_session_id");
-        if (!sessionId) {
-            sessionId = "sess_" + Math.random().toString(36).substring(2, 15);
-            localStorage.setItem("nubeplay_session_id", sessionId);
-        }
-        return sessionId;
+    function obtenerCarrito() {
+        return JSON.parse(localStorage.getItem("carritoNubeplay")) || [];
     }
 
-    async function actualizarContador() {
+    function guardarCarrito(carrito) {
+        localStorage.setItem("carritoNubeplay", JSON.stringify(carrito));
+    }
+
+    function actualizarContador() {
         if (!contadorCarrito) return;
-        try {
-            const res = await fetch(`${API_URL}/carrito/${obtenerSessionId()}`);
-            if (res.ok) {
-                const data = await res.json();
-                const totalItems = data.items.reduce((acc, item) => acc + item.cantidad, 0);
-                contadorCarrito.textContent = totalItems;
-            }
-        } catch (err) {
-            console.error("Error al obtener estado del carrito:", err);
-        }
+        const carrito = obtenerCarrito();
+        const totalItems = carrito.reduce((acc, item) => acc + item.cantidad, 0);
+        contadorCarrito.textContent = totalItems;
     }
 
-    async function cargarProductos() {
+    function cargarProductos() {
         if (!contenedor) return;
 
-        const buscar = inputBuscar ? inputBuscar.value.trim() : "";
+        const productos = obtenerProductos();
+        const buscar = inputBuscar ? inputBuscar.value.trim().toLowerCase() : "";
         const categoria = selectCategoria ? selectCategoria.value : "todas";
 
-        try {
-            const url = new URL(`${API_URL}/productos`);
-            if (buscar) url.searchParams.append("buscar", buscar);
-            if (categoria) url.searchParams.append("categoria", categoria);
+        const filtrados = productos.filter(p => {
+            const coincideNombre = p.nombre.toLowerCase().includes(buscar);
+            const coincideCategoria = categoria === "todas" || p.categoria.toLowerCase() === categoria.toLowerCase();
+            return coincideNombre && coincideCategoria;
+        });
 
-            const res = await fetch(url);
-            const productos = await res.json();
-
-            renderizarProductos(productos);
-        } catch (err) {
-            console.error("Error al cargar productos desde la API:", err);
-            contenedor.innerHTML = `
-                <div class="col-12 text-center py-5">
-                    <i class="bi bi-exclamation-triangle display-3 text-danger"></i>
-                    <h4 class="mt-3 text-muted">Error al conectar con la base de datos</h4>
-                </div>
-            `;
-        }
+        renderizarProductos(filtrados);
     }
 
     function renderizarProductos(productos) {
@@ -88,11 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="mt-3 pt-3 border-top">
                             <span class="fs-5 fw-bold text-primary d-block mb-3">${formatearPrecio(producto.precio)}</span>
                             <div class="d-grid gap-2">
-                                <a href="detalle-producto.html?id=${producto.id}" class="btn btn-outline-primary btn-sm fw-bold">
-                                    <i class="bi bi-eye me-1"></i> Ver Detalle
-                                </a>
-                                <button class="btn btn-primary btn-sm fw-bold btn-agregar" data-id="${producto.id}" data-nombre="${producto.nombre}">
-                                    <i class="bi bi-cart-plus me-1"></i> Agregar
+                                <button class="btn btn-primary btn-sm fw-bold btn-agregar" data-id="${producto.id}">
+                                    <i class="bi bi-cart-plus me-1"></i> Agregar al Carrito
                                 </button>
                             </div>
                         </div>
@@ -103,36 +130,41 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         document.querySelectorAll(".btn-agregar").forEach(boton => {
-            boton.addEventListener("click", async (e) => {
+            boton.addEventListener("click", (e) => {
                 const idProd = parseInt(e.currentTarget.getAttribute("data-id"));
-                const nombreProd = e.currentTarget.getAttribute("data-nombre");
-                await agregarAlCarrito(idProd, nombreProd);
+                agregarAlCarrito(idProd);
             });
         });
     }
 
-    async function agregarAlCarrito(productoId, nombreProducto) {
-        try {
-            const res = await fetch(`${API_URL}/carrito`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    sessionId: obtenerSessionId(),
-                    productoId: productoId,
-                    cantidad: 1
-                })
-            });
+    function agregarAlCarrito(productoId) {
+        const productos = obtenerProductos();
+        const productoTarget = productos.find(p => p.id === productoId);
+        if (!productoTarget) return;
 
-            if (res.ok) {
-                actualizarContador();
-                if (alertaCarrito && mensajeAlerta) {
-                    mensajeAlerta.textContent = `"${nombreProducto}" añadido al carrito.`;
-                    alertaCarrito.classList.remove("d-none");
-                    setTimeout(() => alertaCarrito.classList.add("d-none"), 2500);
-                }
-            }
-        } catch (err) {
-            console.error("Error al agregar al carrito:", err);
+        let carrito = obtenerCarrito();
+        const itemEnCarrito = carrito.find(item => item.id === productoId);
+
+        if (itemEnCarrito) {
+            itemEnCarrito.cantidad += 1;
+        } else {
+            carrito.push({
+                id: productoTarget.id,
+                nombre: productoTarget.nombre,
+                precio: productoTarget.precio,
+                categoria: productoTarget.categoria,
+                imagen: productoTarget.imagen,
+                cantidad: 1
+            });
+        }
+
+        guardarCarrito(carrito);
+        actualizarContador();
+
+        if (alertaCarrito && mensajeAlerta) {
+            mensajeAlerta.textContent = `"${productoTarget.nombre}" añadido al carrito.`;
+            alertaCarrito.classList.remove("d-none");
+            setTimeout(() => alertaCarrito.classList.add("d-none"), 2500);
         }
     }
 
@@ -142,3 +174,4 @@ document.addEventListener("DOMContentLoaded", () => {
     cargarProductos();
     actualizarContador();
 });
+
