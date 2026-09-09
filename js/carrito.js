@@ -56,8 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
             subtotalGeneral += subtotal;
             totalUnidades += prod.cantidad;
 
-            const botonRestarDeshabilitado = prod.cantidad <= 1 ? "disabled" : "";
-
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td class="ps-4">
@@ -72,7 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="fw-semibold">${formatearPrecio(prod.precio)}</td>
                 <td class="text-center">
                     <div class="btn-group btn-group-sm" role="group">
-                        <button class="btn btn-outline-secondary btn-restar" data-id="${prod.id}" ${botonRestarDeshabilitado}>-</button>
+                        <button class="btn btn-outline-secondary btn-restar" data-id="${prod.id}" ${prod.cantidad <= 1 ? "disabled" : ""}>-</button>
                         <span class="btn btn-light disabled px-3 fw-bold text-dark">${prod.cantidad}</span>
                         <button class="btn btn-outline-secondary btn-sumar" data-id="${prod.id}">+</button>
                     </div>
@@ -172,12 +170,47 @@ document.addEventListener("DOMContentLoaded", () => {
             const carrito = obtenerCarrito();
             if (carrito.length === 0) return;
 
+            const usuarioSesion = JSON.parse(localStorage.getItem("usuario_nubeplay"));
+            if (!usuarioSesion) {
+                alert("Debes iniciar sesión para completar la compra.");
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Actualizar stock de los productos
+            let productosStorage = JSON.parse(localStorage.getItem("productos")) || [];
+            carrito.forEach(item => {
+                const index = productosStorage.findIndex(p => p.id === item.id);
+                if (index !== -1) {
+                    productosStorage[index].stock = Math.max(0, (productosStorage[index].stock || 0) - item.cantidad);
+                }
+            });
+            localStorage.setItem("productos", JSON.stringify(productosStorage));
+
+            // Guardar Venta
+            let ventas = JSON.parse(localStorage.getItem("ventas")) || [];
+            const subtotalG = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+            const totalG = descuentoAplicado ? subtotalG * 0.90 : subtotalG;
+
+            const nuevaVenta = {
+                id: Date.now(),
+                cliente: usuarioSesion.nombre,
+                correo: usuarioSesion.correo,
+                fecha: new Date().toLocaleDateString("es-CL"),
+                items: carrito,
+                total: totalG
+            };
+            ventas.push(nuevaVenta);
+            localStorage.setItem("ventas", JSON.stringify(ventas));
+
+            // Limpiar carrito
+            localStorage.removeItem("carritoNubeplay");
+            descuentoAplicado = false;
+
             alerta.className = "alert alert-success";
             alerta.textContent = "¡Gracias por tu compra! Tu pedido ha sido registrado con éxito.";
             alerta.classList.remove("d-none");
 
-            localStorage.removeItem("carritoNubeplay");
-            descuentoAplicado = false;
             renderizarTabla();
 
             setTimeout(() => {
@@ -188,3 +221,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderizarTabla();
 });
+
