@@ -4,11 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // ----------------------------------------------------
     const usuarioSesion = JSON.parse(localStorage.getItem("usuario_nubeplay"));
 
+
     if (!usuarioSesion || (usuarioSesion.rol !== "Admin" && usuarioSesion.rol !== "Administrador")) {
         alert("Acceso denegado. Debes iniciar sesión como Administrador.");
         window.location.href = "login.html";
         return;
     }
+
 
     // ----------------------------------------------------
     // DATOS INICIALES
@@ -30,9 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     ];
 
+
     if (!localStorage.getItem("usuarios")) {
         localStorage.setItem("usuarios", JSON.stringify(usuariosIniciales));
     }
+
 
     const tablaProductos = document.getElementById("tablaProductosAdmin");
     const tablaUsuarios = document.getElementById("tablaUsuariosAdmin");
@@ -40,14 +44,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const totalUsuariosCount = document.getElementById("totalUsuariosCount");
     const stockBajoCount = document.getElementById("stockBajoCount");
 
+
     const modalProducto = new bootstrap.Modal(document.getElementById("modalProducto"));
     const formProducto = document.getElementById("formProducto");
     const btnNuevoProducto = document.getElementById("btnNuevoProducto");
+
 
     const modalUsuario = new bootstrap.Modal(document.getElementById("modalUsuario"));
     const formUsuario = document.getElementById("formUsuario");
     const btnGenerarPass = document.getElementById("btnGenerarPass");
     const tablaComprasUsuario = document.getElementById("tablaComprasUsuario");
+
 
     // ----------------------------------------------------
     // FUNCION DE FORMATO DE MONEDA
@@ -56,29 +63,36 @@ document.addEventListener("DOMContentLoaded", () => {
         return new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP" }).format(precio);
     }
 
+
     function obtenerProductos() {
         return JSON.parse(localStorage.getItem("productos")) || [];
     }
+
 
     function obtenerUsuarios() {
         return JSON.parse(localStorage.getItem("usuarios")) || [];
     }
 
+
     function actualizarEstadisticas() {
         const productos = obtenerProductos();
         const usuarios = obtenerUsuarios();
 
+
         if (totalProductosCount) totalProductosCount.textContent = productos.length;
         if (totalUsuariosCount) totalUsuariosCount.textContent = usuarios.length;
+
 
         const conStockBajo = productos.filter(p => p.stock < 5).length;
         if (stockBajoCount) stockBajoCount.textContent = conStockBajo;
     }
 
+
     function renderProductos() {
         if (!tablaProductos) return;
         const productos = obtenerProductos();
         tablaProductos.innerHTML = "";
+
 
         productos.forEach(p => {
             const tr = document.createElement("tr");
@@ -111,13 +125,16 @@ document.addEventListener("DOMContentLoaded", () => {
             tablaProductos.appendChild(tr);
         });
 
+
         actualizarEstadisticas();
     }
+
 
     function renderUsuarios() {
         if (!tablaUsuarios) return;
         const usuarios = obtenerUsuarios();
         tablaUsuarios.innerHTML = "";
+
 
         usuarios.forEach(u => {
             const tr = document.createElement("tr");
@@ -144,8 +161,10 @@ document.addEventListener("DOMContentLoaded", () => {
             tablaUsuarios.appendChild(tr);
         });
 
+
         actualizarEstadisticas();
     }
+
 
     if (btnNuevoProducto) {
         btnNuevoProducto.addEventListener("click", () => {
@@ -155,9 +174,11 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+
     if (formProducto) {
         formProducto.addEventListener("submit", (e) => {
             e.preventDefault();
+
 
             const id = document.getElementById("prodId").value;
             const nombre = document.getElementById("prodNombre").value.trim();
@@ -167,7 +188,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const descripcion = document.getElementById("prodDescripcion").value.trim();
             const imagen = document.getElementById("prodImagen").value.trim();
 
+
             let productos = obtenerProductos();
+
 
             if (id) {
                 productos = productos.map(p => p.id == id ? { id: Number(id), nombre, categoria, precio, stock, descripcion, imagen } : p);
@@ -184,20 +207,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 productos.push(nuevoProd);
             }
 
+
             localStorage.setItem("productos", JSON.stringify(productos));
             modalProducto.hide();
             renderProductos();
         });
     }
 
+
     if (tablaProductos) {
         tablaProductos.addEventListener("click", (e) => {
             const btnEdit = e.target.closest(".btn-editar-prod");
             const btnDelete = e.target.closest(".btn-eliminar-prod");
 
+
             if (btnEdit) {
                 const id = btnEdit.dataset.id;
                 const producto = obtenerProductos().find(p => p.id == id);
+
 
                 if (producto) {
                     document.getElementById("prodId").value = producto.id;
@@ -208,10 +235,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("prodDescripcion").value = producto.descripcion;
                     document.getElementById("prodImagen").value = producto.imagen;
 
+
                     document.getElementById("modalProductoTitulo").textContent = "Editar Producto";
                     modalProducto.show();
                 }
             }
+
 
             if (btnDelete) {
                 const id = btnDelete.dataset.id;
@@ -224,6 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+
     if (btnGenerarPass) {
         btnGenerarPass.addEventListener("click", () => {
             const randomPass = Math.random().toString(36).slice(-6);
@@ -231,12 +261,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+
     if (tablaUsuarios) {
         tablaUsuarios.addEventListener("click", (e) => {
             const btnEdit = e.target.closest(".btn-editar-usr");
             if (btnEdit) {
                 const id = btnEdit.dataset.id;
                 const usuario = obtenerUsuarios().find(u => u.id == id);
+
 
                 if (usuario) {
                     document.getElementById("usrId").value = usuario.id;
@@ -248,6 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     document.getElementById("usrPassword").value = usuario.password;
                     document.getElementById("usrRol").value = usuario.rol;
                     document.getElementById("usrEstado").value = usuario.estado;
+
 
                     tablaComprasUsuario.innerHTML = "";
                     if (usuario.compras && usuario.compras.length > 0) {
@@ -265,15 +298,18 @@ document.addEventListener("DOMContentLoaded", () => {
                         tablaComprasUsuario.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No registra compras realizadas.</td></tr>`;
                     }
 
+
                     modalUsuario.show();
                 }
             }
         });
     }
 
+
     if (formUsuario) {
         formUsuario.addEventListener("submit", (e) => {
             e.preventDefault();
+
 
             const id = document.getElementById("usrId").value;
             const nombre = document.getElementById("usrNombre").value.trim();
@@ -285,7 +321,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const rol = document.getElementById("usrRol").value;
             const estado = document.getElementById("usrEstado").value;
 
+
             let usuarios = obtenerUsuarios();
+
 
             if (id) {
                 usuarios = usuarios.map(u => u.id == id ? {
@@ -301,13 +339,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 } : u);
             }
 
+
             localStorage.setItem("usuarios", JSON.stringify(usuarios));
             modalUsuario.hide();
             renderUsuarios();
         });
     }
 
+
     // Carga inicial de datos de las tablas
     renderProductos();
     renderUsuarios();
 });
+
