@@ -1,14 +1,12 @@
 document.addEventListener("DOMContentLoaded", () => {
-    // ----------------------------------------------------
-    // USUARIO ADMINISTRADOR POR DEFECTO (Si no existe)
-    // ----------------------------------------------------
+
     const adminDefault = {
         id: 999,
         run: "111111111",
         nombre: "Administrador Nubeplay",
         correo: "admin@duoc.cl",
         password: "admin",
-        rol: "Administrador",
+        rol: "Admin",
         estado: "Activo",
         compras: []
     };
@@ -17,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
 
     // Si el usuario admin no está en la lista, lo registramos por defecto
-    const existeAdmin = usuarios.some(u => u.correo === adminDefault.correo);
+    const existeAdmin = usuarios.some(u => u.correo.toLowerCase() === adminDefault.correo.toLowerCase());
     if (!existeAdmin) {
         usuarios.push(adminDefault);
         localStorage.setItem("usuarios", JSON.stringify(usuarios));
@@ -32,12 +30,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const recordarmeCheck = document.getElementById("recordarme");
     const mensajeLogin = document.getElementById("mensajeLogin");
 
+    if (!formLogin) return;
+
     // Rellenar correo si fue recordado anteriormente
     const correoGuardado = localStorage.getItem("recordar_correo");
-    if (correoGuardado) {
+    if (correoGuardado && emailInput) {
         emailInput.value = correoGuardado;
         recordarmeCheck.checked = true;
     }
+
+    // Limpiar alertas al escribir
+    [emailInput, passwordInput].forEach(input => {
+        if (input) {
+            input.addEventListener("input", () => {
+                input.classList.remove("is-invalid");
+                mensajeLogin.classList.add("d-none");
+            });
+        }
+    });
 
     // ----------------------------------------------------
     // VALIDACIONES
@@ -128,8 +138,13 @@ document.addEventListener("DOMContentLoaded", () => {
         mensajeLogin.textContent = `¡Bienvenido/a ${usuarioEncontrado.nombre}! Redirigiendo...`;
         mensajeLogin.classList.remove("d-none");
 
+        // Normalizar comparación del rol
+        const rolNormalizado = usuarioEncontrado.rol ? usuarioEncontrado.rol.toLowerCase() : "";
+        const esAdmin = rolNormalizado === "admin" || rolNormalizado === "administrador";
+
         setTimeout(() => {
-            if (usuarioEncontrado.rol === "Administrador") {
+            if (esAdmin) {
+                // Redirección saliendo de la carpeta 'pages/' hacia la raíz donde está admin.html
                 window.location.href = "admin.html";
             } else {
                 window.location.href = "productos.html";
