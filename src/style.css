@@ -639,3 +639,19 @@ a {
 
 }
 
+
+
+/* ---------- Ajustes React ---------- */
+.navbar-nubeplay .nav-link.active {
+    color: #6ea8fe;
+    font-weight: 600;
+}
+
+.hero-img {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+}
