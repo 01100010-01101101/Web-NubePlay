@@ -3,18 +3,22 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 
+
 const ENLACES_TIENDA = [
     { ruta: "/", texto: "Inicio", icono: "bi-house", exacto: true },
     { ruta: "/productos", texto: "Productos", icono: "bi-controller" },
+    { ruta: "/categorias", texto: "Categorías", icono: "bi-grid" },
     { ruta: "/blogs", texto: "Noticias", icono: "bi-newspaper" },
     { ruta: "/nosotros", texto: "Nosotros", icono: "bi-people" },
     { ruta: "/contacto", texto: "Contacto", icono: "bi-envelope" }
 ];
 
+
 const ENLACES_VENDEDOR = [
     { ruta: "/productos", texto: "Productos", icono: "bi-controller" },
     { ruta: "/admin?tab=ordenes", texto: "Órdenes", icono: "bi-receipt" }
 ];
+
 
 function Navbar({ fija = false }) {
     const [menuAbierto, setMenuAbierto] = useState(false);
@@ -22,8 +26,10 @@ function Navbar({ fija = false }) {
     const { totalUnidades } = useCart();
     const navigate = useNavigate();
 
+
     const enlaces = esVendedor ? ENLACES_VENDEDOR : ENLACES_TIENDA;
     const cerrarMenu = () => setMenuAbierto(false);
+
 
     function manejarCerrarSesion() {
         cerrarSesion();
@@ -31,12 +37,14 @@ function Navbar({ fija = false }) {
         navigate("/login");
     }
 
+
     return (
         <nav className={`navbar navbar-expand-lg navbar-dark navbar-nubeplay ${fija ? "fixed-top" : ""}`}>
             <div className="container">
                 <Link className="navbar-brand fw-bold" to="/" onClick={cerrarMenu}>
                     <i className="bi bi-cloud-fill"></i> NUBEPLAY
                 </Link>
+
 
                 <button
                     className="navbar-toggler"
@@ -48,6 +56,7 @@ function Navbar({ fija = false }) {
                     <span className="navbar-toggler-icon"></span>
                 </button>
 
+
                 <div className={`collapse navbar-collapse ${menuAbierto ? "show" : ""}`}>
                     <ul className="navbar-nav ms-auto align-items-lg-center">
                         {enlaces.map(enlace => (
@@ -57,6 +66,7 @@ function Navbar({ fija = false }) {
                                 </NavLink>
                             </li>
                         ))}
+
 
                         {!esVendedor && (
                             <li className="nav-item ms-lg-2">
@@ -69,6 +79,7 @@ function Navbar({ fija = false }) {
                             </li>
                         )}
 
+
                         {esAdmin && (
                             <li className="nav-item ms-lg-2">
                                 <NavLink className="nav-link" to="/admin" onClick={cerrarMenu}>
@@ -76,6 +87,7 @@ function Navbar({ fija = false }) {
                                 </NavLink>
                             </li>
                         )}
+
 
                         <li className="nav-item ms-lg-2 mt-2 mt-lg-0">
                             {usuario ? (
@@ -101,3 +113,4 @@ function Navbar({ fija = false }) {
     );
 }
 export default Navbar;
+

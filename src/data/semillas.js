@@ -66,7 +66,13 @@ export const usuariosIniciales = [
 ];
 
 export const categorias = [
-    { valor: "juegos", nombre: "Videojuegos" },
-    { valor: "consolas", nombre: "Consolas" },
-    { valor: "accesorios", nombre: "Accesorios" }
+    { valor: "juegos", nombre: "Videojuegos", icono: "bi-joystick", descripcion: "Los mejores títulos para todas las plataformas." },
+    { valor: "consolas", nombre: "Consolas", icono: "bi-controller", descripcion: "Consolas de última generación." },
+    { valor: "accesorios", nombre: "Accesorios", icono: "bi-headset", descripcion: "Mandos, audífonos y más para tu setup." }
 ];
+
+
+export function obtenerCategoria(valor) {
+    return categorias.find(categoria => categoria.valor === valor) || null;
+}
+
