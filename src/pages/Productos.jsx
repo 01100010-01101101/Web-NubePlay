@@ -3,7 +3,7 @@ import EncabezadoPagina from "../components/common/EncabezadoPagina";
 import FiltrosProductos from "../components/productos/FiltrosProductos";
 import ListaProductos from "../components/productos/ListaProductos";
 import AvisoFlotante from "../components/common/AvisoFlotante";
-import { obtenerProductos } from "../data/db";
+import { obtenerCategorias, obtenerProductos } from "../data/db";
 import { filtrarProductos } from "../utils/carrito";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -17,6 +17,7 @@ function Productos() {
     const { aviso, mostrar, ocultar } = useAviso(2500);
 
     const productos = useMemo(() => obtenerProductos(), []);
+    const categorias = useMemo(() => obtenerCategorias(), []);
     const filtrados = filtrarProductos(productos, busqueda, categoria);
 
     function agregarAlCarrito(producto) {
@@ -36,6 +37,7 @@ function Productos() {
                 <FiltrosProductos
                     busqueda={busqueda}
                     categoria={categoria}
+                    categorias={categorias}
                     onBusquedaChange={setBusqueda}
                     onCategoriaChange={setCategoria}
                 />

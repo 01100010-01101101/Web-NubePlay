@@ -1,5 +1,5 @@
-import { categorias } from "../../data/semillas";
-function FiltrosProductos({ busqueda, categoria, onBusquedaChange, onCategoriaChange }) {
+// Buscador por nombre + selector de categoría (componente controlado).
+function FiltrosProductos({ busqueda, categoria, categorias = [], onBusquedaChange, onCategoriaChange }) {
     return (
         <div className="row mb-4 g-3">
             <div className="col-md-8">

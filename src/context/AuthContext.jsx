@@ -4,8 +4,23 @@ import { esRolAdmin, esRolVendedor } from "../utils/formato";
 
 const AuthContext = createContext(null);
 
+// Compara la sesión guardada con la "base de datos": si el usuario fue eliminado o
+// desactivado se cierra la sesión, y siempre se usan su rol y datos actuales.
+export function validarSesion(sesion) {
+    if (!sesion) return null;
+
+    const actual = db.obtenerUsuarioPorId(sesion.id);
+    if (!actual || actual.estado === "Inactivo") {
+        db.cerrarSesion();
+        return null;
+    }
+
+    db.guardarSesion(actual);
+    return actual;
+}
+
 export function AuthProvider({ children }) {
-    const [usuario, setUsuario] = useState(() => db.obtenerSesion());
+    const [usuario, setUsuario] = useState(() => validarSesion(db.obtenerSesion()));
 
     function iniciarSesion(correo, password) {
         const encontrado = db.buscarUsuarioPorCredenciales(correo.trim(), password.trim());
@@ -28,10 +43,7 @@ export function AuthProvider({ children }) {
     }
 
     function refrescarSesion() {
-        if (!usuario) return;
-        const actualizado = db.obtenerUsuarioPorId(usuario.id) || usuario;
-        db.guardarSesion(actualizado);
-        setUsuario(actualizado);
+        setUsuario(validarSesion(usuario));
     }
 
     const valor = {

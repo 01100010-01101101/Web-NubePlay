@@ -65,14 +65,16 @@ export const usuariosIniciales = [
     }
 ];
 
-export const categorias = [
+// `valor` es el identificador que guardan los productos; no cambia al editar el nombre.
+export const categoriasIniciales = [
     { valor: "juegos", nombre: "Videojuegos", icono: "bi-joystick", descripcion: "Los mejores títulos para todas las plataformas." },
     { valor: "consolas", nombre: "Consolas", icono: "bi-controller", descripcion: "Consolas de última generación." },
     { valor: "accesorios", nombre: "Accesorios", icono: "bi-headset", descripcion: "Mandos, audífonos y más para tu setup." }
 ];
 
-
-export function obtenerCategoria(valor) {
-    return categorias.find(categoria => categoria.valor === valor) || null;
-}
+// Íconos de Bootstrap Icons que el admin puede elegir para una categoría.
+export const ICONOS_CATEGORIA = [
+    "bi-joystick", "bi-controller", "bi-headset", "bi-pc-display", "bi-laptop", "bi-keyboard",
+    "bi-mouse", "bi-phone", "bi-tv", "bi-speaker", "bi-camera", "bi-gift", "bi-tag", "bi-box-seam"
+];
 

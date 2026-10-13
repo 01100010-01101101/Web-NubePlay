@@ -22,6 +22,17 @@ export function fechaLocalISO(fecha = new Date()) {
 }
 
 
+// Convierte un texto en identificador: "Tarjetas Gráficas" -> "tarjetas-graficas".
+export function crearSlug(texto) {
+    return String(texto || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
 export function esRolAdmin(usuario) {
     const rol = String(usuario?.rol || "").toLowerCase();
     return rol === "admin" || rol === "administrador";

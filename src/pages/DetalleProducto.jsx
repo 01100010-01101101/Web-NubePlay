@@ -5,7 +5,7 @@ import EstadoVacio from "../components/common/EstadoVacio";
 import SelectorCantidad from "../components/detalle/SelectorCantidad";
 import ListaResenas from "../components/detalle/ListaResenas";
 import FormularioResena from "../components/detalle/FormularioResena";
-import { crearResena, obtenerProductoPorId, obtenerResenasPorProducto } from "../data/db";
+import { crearResena, obtenerNombreCategoria, obtenerProductoPorId, obtenerResenasPorProducto } from "../data/db";
 import { formatearPrecio, IMAGEN_POR_DEFECTO, usarImagenPorDefecto } from "../utils/formato";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -81,7 +81,7 @@ function DetalleProducto() {
 
                         <div className="col-lg-6 d-flex flex-column justify-content-center">
                             <span className="badge bg-secondary text-uppercase mb-2 align-self-start">
-                                {producto.categoria || "Sin categoría"}
+                                {obtenerNombreCategoria(producto.categoria)}
                             </span>
                             <h2 className="fw-bold mb-2">{producto.nombre}</h2>
                             <h3 className="display-6 fw-bold text-primary mb-3">{formatearPrecio(producto.precio)}</h3>

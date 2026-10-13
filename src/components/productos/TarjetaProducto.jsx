@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { formatearPrecio, IMAGEN_POR_DEFECTO, usarImagenPorDefecto } from "../../utils/formato";
+import { obtenerNombreCategoria } from "../../data/db";
 
 function TarjetaProducto({ producto, onAgregar }) {
     const agotado = producto.stock <= 0;
@@ -15,7 +16,7 @@ function TarjetaProducto({ producto, onAgregar }) {
             />
             <div className="card-body p-4 d-flex flex-column">
                 <div className="mb-2 d-flex justify-content-between align-items-center gap-2">
-                    <span className="badge bg-secondary text-capitalize">{producto.categoria}</span>
+                    <span className="badge bg-secondary">{obtenerNombreCategoria(producto.categoria)}</span>
                     {agotado
                         ? <span className="badge bg-danger">Agotado</span>
                         : <span className="badge bg-success">Stock: {producto.stock}</span>}

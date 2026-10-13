@@ -91,6 +91,9 @@ export function validarProducto(datos) {
     if (!validarTexto(datos.nombre, 100)) {
         errores.nombre = "El nombre es obligatorio (máx. 100 caracteres).";
     }
+    if (!datos.categoria) {
+        errores.categoria = "Debe seleccionar una categoría.";
+    }
     if (datos.precio === "" || Number(datos.precio) < 0 || Number.isNaN(Number(datos.precio))) {
         errores.precio = "El precio debe ser un número mayor o igual a 0.";
     }
@@ -105,6 +108,54 @@ export function validarProducto(datos) {
     }
     if (datos.imagen && !/^https?:\/\//i.test(datos.imagen)) {
         errores.imagen = "La imagen debe ser una URL válida (http/https) o dejarse vacía.";
+    }
+
+    return errores;
+}
+
+// Valida una categoría. `existentes` sirve para evitar nombres repetidos;
+// `valorActual` excluye a la categoría que se está editando.
+export function validarCategoria(datos, existentes = [], valorActual = null) {
+    const errores = {};
+    const nombre = String(datos.nombre || "").trim();
+
+    if (nombre.length < 3 || nombre.length > 50) {
+        errores.nombre = "El nombre debe tener entre 3 y 50 caracteres.";
+    } else if (existentes.some(c => c.valor !== valorActual && c.nombre.toLowerCase() === nombre.toLowerCase())) {
+        errores.nombre = "Ya existe una categoría con ese nombre.";
+    }
+    if (String(datos.descripcion || "").length > 150) {
+        errores.descripcion = "La descripción debe tener máximo 150 caracteres.";
+    }
+    if (!datos.icono) {
+        errores.icono = "Debe seleccionar un ícono.";
+    }
+
+    return errores;
+}
+
+// Valida el cambio de datos personales y (opcionalmente) de contraseña del perfil.
+export function validarPerfil(datos, passwordGuardada) {
+    const errores = {};
+
+    if (!validarTexto(datos.nombre, 50)) {
+        errores.nombre = "El nombre es requerido (máx. 50 caracteres).";
+    }
+    if (!validarTexto(datos.apellidos, 100)) {
+        errores.apellidos = "Los apellidos son requeridos (máx. 100 caracteres).";
+    }
+
+    const quiereCambiarPassword = datos.passwordNueva || datos.confirmarPassword;
+    if (quiereCambiarPassword) {
+        if (datos.passwordActual !== passwordGuardada) {
+            errores.passwordActual = "La contraseña actual no es correcta.";
+        }
+        if (!validarPassword(datos.passwordNueva)) {
+            errores.passwordNueva = "La nueva contraseña debe tener entre 4 y 10 caracteres.";
+        }
+        if (datos.confirmarPassword !== datos.passwordNueva) {
+            errores.confirmarPassword = "Las contraseñas no coinciden.";
+        }
     }
 
     return errores;

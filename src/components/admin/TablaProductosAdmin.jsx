@@ -1,27 +1,34 @@
 import { Link } from "react-router-dom";
 import { formatearPrecio, IMAGEN_POR_DEFECTO, usarImagenPorDefecto } from "../../utils/formato";
+import { obtenerNombreCategoria } from "../../data/db";
+import EstadoVacio from "../common/EstadoVacio";
+
+// Inventario de productos. Si `editable` es false (vendedor) solo permite ver el detalle.
 function TablaProductosAdmin({ productos, editable, onEditar, onEliminar }) {
     return (
         <div className="table-responsive">
             <table className="table table-hover align-middle mb-0">
                 <thead className="table-light">
                     <tr>
-                        <th className="ps-3">Código</th>
+                        <th className="ps-3 d-none d-md-table-cell">Código</th>
                         <th>Producto</th>
-                        <th>Categoría</th>
+                        <th className="d-none d-sm-table-cell">Categoría</th>
                         <th>Precio</th>
                         <th>Stock</th>
-                        <th>Stock crítico</th>
+                        <th className="d-none d-lg-table-cell">Stock crítico</th>
                         <th className="text-center">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
+                    {productos.length === 0 && (
+                        <tr><td colSpan="7"><EstadoVacio icono="bi-search" titulo="No hay productos que coincidan" /></td></tr>
+                    )}
                     {productos.map(producto => {
                         const stockBajo = producto.stock <= producto.stockCritico;
 
                         return (
                             <tr key={producto.id}>
-                                <td className="ps-3 fw-bold">{producto.codigo}</td>
+                                <td className="ps-3 fw-bold d-none d-md-table-cell">{producto.codigo}</td>
                                 <td>
                                     <div className="d-flex align-items-center">
                                         <img
@@ -35,12 +42,12 @@ function TablaProductosAdmin({ productos, editable, onEditar, onEliminar }) {
                                         <span className="fw-semibold">{producto.nombre}</span>
                                     </div>
                                 </td>
-                                <td><span className="badge bg-secondary text-capitalize">{producto.categoria}</span></td>
+                                <td className="d-none d-sm-table-cell"><span className="badge bg-secondary">{obtenerNombreCategoria(producto.categoria)}</span></td>
                                 <td>{formatearPrecio(producto.precio)}</td>
                                 <td>
                                     <span className={`badge ${stockBajo ? "bg-danger" : "bg-success"}`}>{producto.stock} un.</span>
                                 </td>
-                                <td>
+                                <td className="d-none d-lg-table-cell">
                                     <span className={`badge ${stockBajo ? "bg-warning text-dark" : "bg-light text-dark"}`}>
                                         {producto.stockCritico} un.
                                     </span>

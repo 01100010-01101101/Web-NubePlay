@@ -1,12 +1,11 @@
 import { useState } from "react";
 import CampoFormulario from "../common/CampoFormulario";
-import { categorias } from "../../data/semillas";
 import { validarProducto } from "../../utils/validaciones";
 
 const PRODUCTO_VACIO = {
     codigo: "",
     nombre: "",
-    categoria: "juegos",
+    categoria: "",
     precio: "",
     stock: "",
     stockCritico: "",
@@ -15,8 +14,10 @@ const PRODUCTO_VACIO = {
 };
 
 //crear o editar un producto
-function FormularioProducto({ producto, onGuardar, onCancelar, validarCodigo }) {
-    const [datos, setDatos] = useState(() => (producto ? { ...PRODUCTO_VACIO, ...producto } : PRODUCTO_VACIO));
+function FormularioProducto({ producto, categorias = [], onGuardar, onCancelar, validarCodigo }) {
+    const [datos, setDatos] = useState(() => (producto
+        ? { ...PRODUCTO_VACIO, ...producto }
+        : { ...PRODUCTO_VACIO, categoria: categorias[0]?.valor || "" }));
     const [errores, setErrores] = useState({});
 
     function actualizarCampo(evento) {
@@ -62,11 +63,12 @@ function FormularioProducto({ producto, onGuardar, onCancelar, validarCodigo }) 
 
                 <div className="col-md-6">
                     <label htmlFor="prodCategoria" className="form-label fw-semibold">Categoría</label>
-                    <select id="prodCategoria" name="categoria" className="form-select" value={datos.categoria} onChange={actualizarCampo}>
+                    <select id="prodCategoria" name="categoria" className={`form-select ${errores.categoria ? "is-invalid" : ""}`} value={datos.categoria} onChange={actualizarCampo}>
                         {categorias.map(item => (
                             <option key={item.valor} value={item.valor}>{item.nombre}</option>
                         ))}
                     </select>
+                    {errores.categoria && <div className="invalid-feedback">{errores.categoria}</div>}
                 </div>
                 <CampoFormulario
                     id="prodPrecio" name="precio" etiqueta="Precio (CLP)" tipo="number" min="0" className="col-md-6"

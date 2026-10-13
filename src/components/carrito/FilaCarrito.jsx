@@ -1,5 +1,6 @@
 import SelectorCantidad from "../detalle/SelectorCantidad";
 import { formatearPrecio, IMAGEN_POR_DEFECTO, usarImagenPorDefecto } from "../../utils/formato";
+import { obtenerNombreCategoria } from "../../data/db";
 function FilaCarrito({ item, onCambiarCantidad, onEliminar }) {
     return (
         <tr>
@@ -14,7 +15,7 @@ function FilaCarrito({ item, onCambiarCantidad, onEliminar }) {
                     />
                     <div>
                         <h6 className="mb-0 fw-bold">{item.nombre}</h6>
-                        <small className="text-capitalize text-muted">{item.categoria}</small>
+                        <small className="text-muted">{obtenerNombreCategoria(item.categoria)}</small>
                     </div>
                 </div>
             </td>

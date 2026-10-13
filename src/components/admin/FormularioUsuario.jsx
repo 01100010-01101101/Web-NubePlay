@@ -3,7 +3,9 @@ import CampoFormulario from "../common/CampoFormulario";
 import SelectorRegionComuna from "../common/SelectorRegionComuna";
 import { limpiarRun, validarUsuario } from "../../utils/validaciones";
 
-function FormularioUsuario({ usuario, onGuardar, validarDuplicados }) {
+// Crea (`esNuevo`) o edita un usuario. Con `esPropio` (el admin editando su propia
+// cuenta) se bloquean el rol y el estado para que no pueda dejarse fuera del panel.
+function FormularioUsuario({ usuario = {}, onGuardar, validarDuplicados, esNuevo = false, esPropio = false }) {
     const [datos, setDatos] = useState({
         nombre: usuario.nombre || "",
         apellidos: usuario.apellidos || "",
@@ -101,7 +103,7 @@ function FormularioUsuario({ usuario, onGuardar, validarDuplicados }) {
                 </div>
                 <div className="col-md-4">
                     <label htmlFor="rol" className="form-label fw-semibold">Tipo de Usuario</label>
-                    <select id="rol" name="rol" className="form-select" value={datos.rol} onChange={actualizarCampo}>
+                    <select id="rol" name="rol" className="form-select" value={datos.rol} onChange={actualizarCampo} disabled={esPropio}>
                         <option value="Cliente">Cliente</option>
                         <option value="Vendedor">Vendedor</option>
                         <option value="Administrador">Administrador</option>
@@ -109,16 +111,24 @@ function FormularioUsuario({ usuario, onGuardar, validarDuplicados }) {
                 </div>
                 <div className="col-md-4">
                     <label htmlFor="estado" className="form-label fw-semibold">Estado de la Cuenta</label>
-                    <select id="estado" name="estado" className="form-select" value={datos.estado} onChange={actualizarCampo}>
+                    <select id="estado" name="estado" className="form-select" value={datos.estado} onChange={actualizarCampo} disabled={esPropio}>
                         <option value="Activo">Activo</option>
                         <option value="Inactivo">Inactivo</option>
                     </select>
                 </div>
             </div>
 
+            {esPropio && (
+                <div className="form-text mb-3" data-testid="aviso-cuenta-propia">
+                    <i className="bi bi-info-circle me-1"></i>
+                    Es tu propia cuenta: no puedes cambiar tu tipo de usuario ni desactivarla.
+                </div>
+            )}
+
             <div className="text-end">
                 <button type="submit" className="btn btn-primary fw-bold">
-                    <i className="bi bi-save me-1"></i> Actualizar Usuario
+                    <i className={`bi ${esNuevo ? "bi-person-plus" : "bi-save"} me-1`}></i>
+                    {esNuevo ? "Crear Usuario" : "Actualizar Usuario"}
                 </button>
             </div>
         </form>

@@ -1,9 +1,10 @@
-import { productosIniciales, usuariosIniciales } from "./semillas";
-import { fechaLocalISO } from "../utils/formato";
+import { categoriasIniciales, productosIniciales, usuariosIniciales } from "./semillas";
+import { crearSlug, fechaLocalISO } from "../utils/formato";
 
 
 export const CLAVES = {
     productos: "productos",
+    categorias: "categorias",
     usuarios: "usuarios",
     ordenes: "ventas",
     resenas: "resenasNubeplay",
@@ -46,6 +47,10 @@ function mismoId(a, b) {
 
 
 export function inicializarDatos() {
+    if (leerLista(CLAVES.categorias).length === 0) {
+        guardar(CLAVES.categorias, categoriasIniciales);
+    }
+
     if (leerLista(CLAVES.productos).length === 0) {
         guardar(CLAVES.productos, productosIniciales);
     }
@@ -63,6 +68,62 @@ export function inicializarDatos() {
 }
 
 
+// ----------------------------------------------------
+// CATEGORÍAS
+// ----------------------------------------------------
+export function obtenerCategorias() {
+    return leerLista(CLAVES.categorias);
+}
+
+export function obtenerCategoriaPorValor(valor) {
+    return obtenerCategorias().find(categoria => categoria.valor === valor) || null;
+}
+
+// Nombre visible de una categoría (si no existe, se muestra el valor guardado).
+export function obtenerNombreCategoria(valor) {
+    return obtenerCategoriaPorValor(valor)?.nombre || valor || "Sin categoría";
+}
+
+export function contarProductosPorCategoria(valor) {
+    return leerLista(CLAVES.productos).filter(producto => producto.categoria === valor).length;
+}
+
+// El `valor` se genera a partir del nombre (ej: "Tarjetas Gráficas" -> "tarjetas-graficas").
+export function crearCategoria({ nombre, descripcion = "", icono }) {
+    const categorias = obtenerCategorias();
+    const base = crearSlug(nombre) || "categoria";
+    let valor = base;
+    for (let i = 2; categorias.some(c => c.valor === valor); i++) valor = `${base}-${i}`;
+
+    const nueva = { valor, nombre, descripcion, icono };
+    guardar(CLAVES.categorias, [...categorias, nueva]);
+    return nueva;
+}
+
+export function actualizarCategoria(valor, cambios) {
+    let actualizada = null;
+    const categorias = obtenerCategorias().map(categoria => {
+        if (categoria.valor !== valor) return categoria;
+        actualizada = { ...categoria, ...cambios, valor: categoria.valor };
+        return actualizada;
+    });
+    guardar(CLAVES.categorias, categorias);
+    return actualizada;
+}
+
+// No permite eliminar una categoría que todavía tiene productos.
+export function eliminarCategoria(valor) {
+    const cantidad = contarProductosPorCategoria(valor);
+    if (cantidad > 0) {
+        return { ok: false, error: `La categoría tiene ${cantidad} producto(s). Cámbialos de categoría primero.` };
+    }
+    guardar(CLAVES.categorias, obtenerCategorias().filter(categoria => categoria.valor !== valor));
+    return { ok: true, error: null };
+}
+
+// ----------------------------------------------------
+// PRODUCTOS
+// ----------------------------------------------------
 export function obtenerProductos() {
     return leerLista(CLAVES.productos).map((producto, index) => ({
         ...producto,

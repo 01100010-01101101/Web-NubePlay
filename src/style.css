@@ -888,3 +888,24 @@ a {
     text-decoration: none;
 }
 
+
+/* ---------- Panel de administración ---------- */
+.tarjeta-estadistica {
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.tarjeta-estadistica:hover,
+.tarjeta-estadistica:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Barras de ranking: delgadas y con extremos redondeados */
+.barra-ranking {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.barra-ranking .progress-bar {
+    border-radius: 4px;
+}

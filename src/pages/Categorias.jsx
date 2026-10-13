@@ -5,8 +5,7 @@ import EstadoVacio from "../components/common/EstadoVacio";
 import AvisoFlotante from "../components/common/AvisoFlotante";
 import TarjetaCategoria from "../components/productos/TarjetaCategoria";
 import ListaProductos from "../components/productos/ListaProductos";
-import { obtenerProductos } from "../data/db";
-import { categorias, obtenerCategoria } from "../data/semillas";
+import { obtenerCategorias, obtenerProductos } from "../data/db";
 import { filtrarProductos } from "../utils/carrito";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -16,8 +15,9 @@ import { useAviso } from "../hooks/useAviso";
 
 function Categorias() {
     const { categoria } = useParams();
-    const seleccionada = categoria ? obtenerCategoria(categoria) : null;
     const productos = useMemo(() => obtenerProductos(), []);
+    const categorias = useMemo(() => obtenerCategorias(), []);
+    const seleccionada = categoria ? categorias.find(item => item.valor === categoria) || null : null;
     const { agregar } = useCart();
     const { esVendedor } = useAuth();
     const { aviso, mostrar, ocultar } = useAviso(2500);
