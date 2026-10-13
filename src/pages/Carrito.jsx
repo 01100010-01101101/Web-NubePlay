@@ -1,71 +1,77 @@
-import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import EncabezadoPagina from "../components/common/EncabezadoPagina";
 import EstadoVacio from "../components/common/EstadoVacio";
 import Alerta from "../components/common/Alerta";
 import TablaCarrito from "../components/carrito/TablaCarrito";
 import ResumenPedido from "../components/carrito/ResumenPedido";
-import { registrarCompra } from "../data/db";
 import { calcularDescuento, calcularSubtotal, esCuponValido } from "../utils/carrito";
+import { MENSAJE_LOGIN_COMPRA } from "../utils/pago";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useAviso } from "../hooks/useAviso";
 
+
 function Carrito() {
-    const { items, cambiarCantidad, eliminar, vaciar, sincronizar } = useCart();
-    const { usuario, refrescarSesion } = useAuth();
-    const [descuentoAplicado, setDescuentoAplicado] = useState(false);
+    const { items, cambiarCantidad, eliminar, vaciar, sincronizar, cuponAplicado, setCuponAplicado } = useCart();
+    const { usuario } = useAuth();
     const { aviso, mostrar, ocultar } = useAviso(4000);
     const navigate = useNavigate();
 
+
     const subtotal = calcularSubtotal(items);
-    const descuento = calcularDescuento(subtotal, descuentoAplicado);
+    const descuento = calcularDescuento(subtotal, cuponAplicado);
+
 
     function manejarCambioCantidad(id, nuevaCantidad) {
         const error = cambiarCantidad(id, nuevaCantidad);
         if (error) mostrar(error, "warning");
     }
 
+
     function aplicarCupon(codigo) {
         const valido = esCuponValido(codigo);
-        setDescuentoAplicado(valido);
+        setCuponAplicado(valido);
         return valido;
     }
+
 
     function vaciarCarrito() {
         if (!window.confirm("¿Estás seguro de que deseas vaciar tu carrito de compras?")) return;
         vaciar();
-        setDescuentoAplicado(false);
     }
 
-    function pagar() {
+
+    // Para comprar se exige sesión; luego se revisa que el stock no haya cambiado.
+    function irAlCheckout() {
         if (!usuario) {
-            navigate("/login", { state: { mensaje: "Debes iniciar sesión para completar la compra." } });
+            navigate("/login", { state: { mensaje: MENSAJE_LOGIN_COMPRA, desde: "/checkout" } });
             return;
         }
+
 
         const actualizado = sincronizar();
         const cambio = actualizado.length !== items.length ||
             actualizado.some((item, i) => item.cantidad !== items[i].cantidad);
+
 
         if (cambio) {
             mostrar("Uno o más productos ya no tienen stock suficiente. Revisa el carrito.", "danger");
             return;
         }
 
-        registrarCompra(usuario, actualizado, subtotal - descuento);
-        vaciar();
-        refrescarSesion();
-        setDescuentoAplicado(false);
-        mostrar("¡Gracias por tu compra! Tu pedido ha sido registrado con éxito.");
+
+        navigate("/checkout");
     }
+
 
     return (
         <>
             <EncabezadoPagina icono="bi-cart-check" titulo="Tu Carrito de Compras" />
 
+
             <main className="container my-4">
                 <Alerta mensaje={aviso?.mensaje} tipo={aviso?.tipo} onCerrar={ocultar} />
+
 
                 <div className="row g-4">
                     <div className="col-lg-8">
@@ -87,6 +93,7 @@ function Carrito() {
                             </div>
                         </div>
 
+
                         {items.length > 0 && (
                             <div className="d-flex justify-content-between align-items-center mt-3 gap-2">
                                 <Link to="/productos" className="btn btn-outline-secondary">
@@ -99,12 +106,14 @@ function Carrito() {
                         )}
                     </div>
 
+
                     <div className="col-lg-4">
                         <ResumenPedido
                             subtotal={subtotal}
                             descuento={descuento}
+                            cuponAplicado={cuponAplicado}
                             onAplicarCupon={aplicarCupon}
-                            onPagar={pagar}
+                            onPagar={irAlCheckout}
                             deshabilitado={items.length === 0}
                         />
                     </div>
@@ -114,4 +123,6 @@ function Carrito() {
     );
 }
 
+
 export default Carrito;
+

@@ -6,6 +6,9 @@ import Productos from "./pages/Productos";
 import DetalleProducto from "./pages/DetalleProducto";
 import Categorias from "./pages/Categorias";
 import Carrito from "./pages/Carrito";
+import Checkout from "./pages/Checkout";
+import CompraExitosa from "./pages/CompraExitosa";
+import PagoError from "./pages/PagoError";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import Nosotros from "./pages/Nosotros";
@@ -14,6 +17,8 @@ import DetalleBlog from "./pages/DetalleBlog";
 import Contacto from "./pages/Contacto";
 import Admin from "./pages/Admin";
 import NoEncontrado from "./pages/NoEncontrado";
+
+
 
 
 function App() {
@@ -26,6 +31,9 @@ function App() {
                 <Route path="/categorias" element={<Categorias />} />
                 <Route path="/categorias/:categoria" element={<Categorias />} />
                 <Route path="/carrito" element={<Carrito />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/compra-exitosa/:id" element={<CompraExitosa />} />
+                <Route path="/pago-error" element={<PagoError />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/registro" element={<Registro />} />
                 <Route path="/nosotros" element={<Nosotros />} />
@@ -36,11 +44,15 @@ function App() {
             </Route>
 
 
+
+
             <Route path="/admin" element={<RutaProtegida><Admin /></RutaProtegida>} />
         </Routes>
     );
 }
 
 
+
+
 export default App;
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+

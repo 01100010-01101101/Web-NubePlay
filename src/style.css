@@ -6,9 +6,11 @@
     --nubeplay-gray: #6b7280;
 }
 
+
 html {
     scroll-behavior: smooth;
 }
+
 
 body {
     margin: 0;
@@ -16,6 +18,7 @@ body {
     background-color: #ffffff;
     color: #222;
 }
+
 
 a {
     text-decoration: none;
@@ -26,14 +29,17 @@ a {
     box-shadow: 0 2px 15px rgba(0, 0, 0, 0.25);
 }
 
+
 .navbar-brand {
     font-size: 1.5rem;
     letter-spacing: 1px;
 }
 
+
 .navbar-brand i {
     color: var(--nubeplay-blue);
 }
+
 
 .navbar-nubeplay .nav-link {
     color: #ffffff;
@@ -41,9 +47,11 @@ a {
     transition: 0.3s;
 }
 
+
 .navbar-nubeplay .nav-link:hover {
     color: #6ea8fe;
 }
+
 
 .carrito-nav {
     display: flex;
@@ -51,10 +59,12 @@ a {
     gap: 5px;
 }
 
+
 .hero-nubeplay {
     min-height: 700px;
     padding-top: 150px;
     padding-bottom: 100px;
+
 
     background:
         linear-gradient(
@@ -63,11 +73,14 @@ a {
             #1e293b
         );
 
+
     color: white;
+
 
     display: flex;
     align-items: center;
 }
+
 
 .hero-nubeplay h1 {
     font-size: 3.8rem;
@@ -75,9 +88,11 @@ a {
     margin-bottom: 20px;
 }
 
+
 .hero-nubeplay h1 span {
     color: var(--nubeplay-blue);
 }
+
 
 .hero-nubeplay p {
     font-size: 1.2rem;
@@ -86,6 +101,7 @@ a {
     max-width: 600px;
 }
 
+
 .badge-nubeplay {
     background-color: rgba(13, 110, 253, 0.15);
     border: 1px solid var(--nubeplay-blue);
@@ -93,12 +109,14 @@ a {
     padding: 9px 14px;
 }
 
+
 .hero-img {
     width: 100%;
     max-width: 500px;
     max-height: 450px;
     object-fit: contain;
 }
+
 
 .btn-nubeplay {
     background-color: var(--nubeplay-blue);
@@ -109,21 +127,25 @@ a {
     transition: 0.3s;
 }
 
+
 .btn-nubeplay:hover {
     background-color: transparent;
     color: var(--nubeplay-blue);
     border-color: var(--nubeplay-blue);
 }
 
+
 .productos-section {
     padding: 90px 0;
     background-color: #ffffff;
 }
 
+
 .section-title {
     text-align: center;
     margin-bottom: 50px;
 }
+
 
 .section-title span {
     color: var(--nubeplay-blue);
@@ -132,15 +154,18 @@ a {
     letter-spacing: 2px;
 }
 
+
 .section-title h2 {
     font-size: 2.5rem;
     font-weight: 700;
     margin-top: 8px;
 }
 
+
 .section-title p {
     color: var(--nubeplay-gray);
 }
+
 
 .producto-card {
     height: 100%;
@@ -149,18 +174,23 @@ a {
     overflow: hidden;
     background-color: #ffffff;
 
+
     box-shadow:
         0 5px 20px rgba(0, 0, 0, 0.08);
+
 
     transition: 0.3s;
 }
 
+
 .producto-card:hover {
     transform: translateY(-8px);
+
 
     box-shadow:
         0 15px 30px rgba(0, 0, 0, 0.15);
 }
+
 
 .producto-imagen {
     height: 240px;
@@ -169,13 +199,16 @@ a {
     padding: 20px;
 }
 
+
 .producto-card .card-body {
     padding: 25px;
 }
 
+
 .producto-card h5 {
     font-weight: 700;
 }
+
 
 .producto-precio {
     font-size: 1.4rem;
@@ -183,11 +216,13 @@ a {
     color: var(--nubeplay-blue);
 }
 
+
 .stock-disponible {
     color: #198754;
     font-size: 0.9rem;
     font-weight: 600;
 }
+
 
 .stock-agotado {
     color: #dc3545;
@@ -196,10 +231,13 @@ a {
 }
 
 
+
+
 .beneficios-section {
     background-color: var(--nubeplay-light);
     padding: 70px 0;
 }
+
 
 .beneficio {
     background-color: white;
@@ -208,9 +246,11 @@ a {
     border-radius: 12px;
     height: 100%;
 
+
     box-shadow:
         0 5px 20px rgba(0, 0, 0, 0.05);
 }
+
 
 .beneficio i {
     font-size: 2.8rem;
@@ -218,26 +258,33 @@ a {
     margin-bottom: 20px;
 }
 
+
 .beneficio h4 {
     font-weight: 700;
 }
+
 
 .beneficio p {
     color: var(--nubeplay-gray);
 }
 
 
+
+
 .pagos-section {
     padding: 70px 0;
 }
+
 
 .pagos-section h2 {
     font-weight: 700;
 }
 
+
 .pagos-section p {
     color: var(--nubeplay-gray);
 }
+
 
 .metodos-pago {
     display: flex;
@@ -247,6 +294,7 @@ a {
     margin-top: 30px;
 }
 
+
 .metodo-pago {
     min-width: 150px;
     padding: 20px;
@@ -254,6 +302,7 @@ a {
     border-radius: 10px;
     background-color: white;
 }
+
 
 .metodo-pago i {
     font-size: 2rem;
@@ -263,20 +312,25 @@ a {
 }
 
 
+
+
 .nosotros-home {
     background-color: var(--nubeplay-light);
     padding: 90px 0;
 }
+
 
 .nosotros-home h2 {
     font-size: 2.5rem;
     font-weight: 700;
 }
 
+
 .nosotros-home p {
     color: var(--nubeplay-gray);
     line-height: 1.8;
 }
+
 
 .nosotros-card {
     background-color: var(--nubeplay-dark);
@@ -286,14 +340,18 @@ a {
     text-align: center;
 }
 
+
 .nosotros-card i {
     font-size: 4rem;
     color: var(--nubeplay-blue);
 }
 
+
 .nosotros-card h3 {
     margin-top: 20px;
 }
+
+
 
 
 .footer-nubeplay {
@@ -302,35 +360,43 @@ a {
     padding: 60px 0 25px;
 }
 
+
 .footer-nubeplay h4 i {
     color: var(--nubeplay-blue);
 }
+
 
 .footer-nubeplay h5 {
     margin-bottom: 20px;
 }
 
+
 .footer-nubeplay p {
     color: #cbd5e1;
 }
+
 
 .footer-links {
     list-style: none;
     padding: 0;
 }
 
+
 .footer-links li {
     margin-bottom: 10px;
 }
+
 
 .footer-links a {
     color: #cbd5e1;
     transition: 0.3s;
 }
 
+
 .footer-links a:hover {
     color: white;
 }
+
 
 .footer-nubeplay hr {
     border-color: #374151;
@@ -338,34 +404,45 @@ a {
 }
 
 
+
+
 @media (max-width: 991px) {
+
 
     .hero-nubeplay {
         text-align: center;
         padding-top: 130px;
     }
 
+
     .hero-nubeplay p {
         margin-left: auto;
         margin-right: auto;
     }
 
+
     .hero-nubeplay h1 {
         font-size: 3rem;
     }
+
 
     .hero-img {
         margin-top: 50px;
     }
 
+
 }
+
+
 
 
 @media (max-width: 576px) {
 
+
     .hero-nubeplay h1 {
         font-size: 2.3rem;
     }
+
 
     .hero-buttons .btn {
         display: block;
@@ -373,29 +450,41 @@ a {
         margin: 10px 0 !important;
     }
 
+
     .productos-section,
     .nosotros-home {
         padding: 60px 0;
     }
 
+
 }
+
+
+
 
 
 
 .login-page {
     min-height: 100vh;
 
+
     display: flex;
 
+
     flex-direction: column;
+
 
     background-color: var(--nubeplay-light);
 }
 
 
 
+
+
+
 .login-page .navbar-nubeplay {
     position: relative;
+
 
     top: auto;
 }
@@ -403,49 +492,75 @@ a {
 
 
 
+
+
+
+
 .login-contenido {
     flex: 1;
 
+
     display: flex;
+
 
     align-items: center;
 
+
     justify-content: center;
+
 
     padding: 50px 0;
 }
 
 
+
+
 .login-contenido .auth-card {
+
 
     width: 100%;
 
+
     max-width: 480px;
+
 
     background-color: white;
 
+
     padding: 40px;
+
 
     border-radius: 15px;
 
+
     box-shadow:
         0 10px 35px rgba(0, 0, 0, 0.10);
+
 
 }
 
 
 
+
+
+
 .login-logo {
+
 
     width: 100%;
 
+
     height: 110px;
+
 
     display: flex;
 
+
     justify-content: center;
 
+
     align-items: center;
+
 
     margin-bottom: 10px;
 }
@@ -453,50 +568,77 @@ a {
 
 
 
+
+
+
+
 .logo-placeholder {
+
 
     width: 100px;
 
+
     height: 100px;
+
 
     border-radius: 50%;
 
+
     background-color: rgba(13, 110, 253, 0.10);
+
 
     border: 2px solid rgba(13, 110, 253, 0.20);
 
+
     display: flex;
+
 
     align-items: center;
 
+
     justify-content: center;
 
+
     color: var(--nubeplay-blue);
+
 
     font-size: 3rem;
 }
 
 
 
+
+
+
 .login-contenido .auth-card h1 {
+
 
     text-align: center;
 
+
     font-size: 2rem;
+
 
     font-weight: 700;
 
+
     margin-top: 10px;
+
 
     margin-bottom: 8px;
 }
 
 
+
+
 .login-contenido .auth-subtitle {
+
 
     text-align: center;
 
+
     color: var(--nubeplay-gray);
+
 
     margin-bottom: 30px;
 }
@@ -504,62 +646,95 @@ a {
 
 
 
+
+
+
+
 .login-contenido .form-label {
+
 
     font-weight: 600;
 }
 
 
+
+
 .login-contenido .input-group-text {
 
+
     background-color: #f8f9fa;
+
 
     border-right: none;
 }
 
 
+
+
 .login-contenido .input-group .form-control {
+
 
     border-left: none;
 }
 
 
+
+
 .login-contenido .form-control {
+
 
     padding: 11px;
 }
 
 
+
+
 .login-contenido .form-control:focus {
 
+
     box-shadow: none;
+
 
     border-color: var(--nubeplay-blue);
 }
 
 
 
+
+
+
 .login-opciones {
+
 
     display: flex;
 
+
     justify-content: space-between;
 
+
     align-items: center;
+
 
     margin-bottom: 25px;
 }
 
 
+
+
 .auth-link {
 
+
     color: var(--nubeplay-blue);
+
 
     font-size: 0.9rem;
 }
 
 
+
+
 .auth-link:hover {
+
 
     text-decoration: underline;
 }
@@ -567,9 +742,15 @@ a {
 
 
 
+
+
+
+
 .login-boton {
 
+
     padding: 12px;
+
 
     font-size: 1rem;
 }
@@ -577,21 +758,33 @@ a {
 
 
 
+
+
+
+
 .login-contenido .auth-footer {
+
 
     text-align: center;
 
+
     border-top: 1px solid #dee2e6;
 
+
     margin-top: 30px;
+
 
     padding-top: 25px;
 }
 
 
+
+
 .login-contenido .auth-footer p {
 
+
     color: var(--nubeplay-gray);
+
 
     margin-bottom: 12px;
 }
@@ -599,59 +792,99 @@ a {
 
 
 
+
+
+
+
 .login-footer {
+
 
     flex-shrink: 0;
 }
 
 
 
+
+
+
 @media (max-width: 576px) {
 
+
     .login-contenido {
+
 
         padding: 35px 15px;
     }
 
 
+
+
     .login-contenido .auth-card {
+
 
         padding: 30px 20px;
     }
 
 
+
+
     .login-contenido .auth-card h1 {
+
 
         font-size: 1.7rem;
     }
 
 
+
+
     .login-opciones {
+
 
         align-items: flex-start;
     }
 
 
+
+
     .auth-link {
+
 
         display: none;
     }
 
+
 }
 
 
+.navbar-nubeplay .nav-link,
+.navbar-nubeplay .navbar-text,
+.navbar-nubeplay .btn {
+    white-space: nowrap;
+}
 
-/* ---------- Ajustes React ---------- */
+
+@media (min-width: 1200px) and (max-width: 1399px) {
+    .navbar-nubeplay .nav-link {
+        margin-left: 0;
+        padding-left: 0.45rem;
+        padding-right: 0.45rem;
+    }
+}
+
+
 .navbar-nubeplay .nav-link.active {
     color: #6ea8fe;
     font-weight: 600;
 }
+
 
 .hero-img {
     margin-left: auto;
     margin-right: auto;
 }
 
+
 .breadcrumb a {
     text-decoration: none;
 }
+

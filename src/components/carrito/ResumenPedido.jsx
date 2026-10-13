@@ -1,25 +1,33 @@
 import { useState } from "react";
 import { formatearPrecio } from "../../utils/formato";
 
-function ResumenPedido({ subtotal, descuento, onAplicarCupon, onPagar, deshabilitado }) {
+
+const MENSAJE_CUPON_OK = { texto: "¡Cupón del 10% aplicado con éxito!", clase: "text-success fw-bold" };
+
+
+function ResumenPedido({ subtotal, descuento, cuponAplicado = false, onAplicarCupon, onPagar, deshabilitado }) {
     const [cupon, setCupon] = useState("");
-    const [mensajeCupon, setMensajeCupon] = useState(null);
+    const [mensajeCupon, setMensajeCupon] = useState(cuponAplicado ? MENSAJE_CUPON_OK : null);
+
 
     function aplicarCupon() {
         const valido = onAplicarCupon(cupon);
         setMensajeCupon(valido
-            ? { texto: "¡Cupón del 10% aplicado con éxito!", clase: "text-success fw-bold" }
+            ? MENSAJE_CUPON_OK
             : { texto: "Código de descuento inválido.", clase: "text-danger" });
     }
+
 
     return (
         <div className="card shadow-sm border-0 rounded-4 p-4">
             <h5 className="fw-bold border-bottom pb-3 mb-3">Resumen del Pedido</h5>
 
+
             <div className="d-flex justify-content-between mb-2">
                 <span className="text-secondary">Subtotal</span>
                 <span className="fw-semibold">{formatearPrecio(subtotal)}</span>
             </div>
+
 
             {descuento > 0 && (
                 <div className="d-flex justify-content-between mb-2 text-success">
@@ -28,10 +36,12 @@ function ResumenPedido({ subtotal, descuento, onAplicarCupon, onPagar, deshabili
                 </div>
             )}
 
+
             <div className="d-flex justify-content-between mb-3">
                 <span className="text-secondary">Envío</span>
                 <span className="text-success fw-semibold">Gratis</span>
             </div>
+
 
             <div className="mb-3">
                 <label htmlFor="inputCupon" className="form-label small fw-semibold text-secondary">¿Tienes un cupón?</label>
@@ -51,12 +61,15 @@ function ResumenPedido({ subtotal, descuento, onAplicarCupon, onPagar, deshabili
                 {mensajeCupon && <div className={`form-text small ${mensajeCupon.clase}`}>{mensajeCupon.texto}</div>}
             </div>
 
+
             <hr />
+
 
             <div className="d-flex justify-content-between mb-4">
                 <span className="fs-5 fw-bold">Total</span>
                 <span className="fs-4 fw-bold text-primary">{formatearPrecio(subtotal - descuento)}</span>
             </div>
+
 
             <button type="button" className="btn btn-primary w-100 py-2 fw-bold" onClick={onPagar} disabled={deshabilitado}>
                 <i className="bi bi-credit-card me-1"></i> Proceder al Pago
@@ -65,4 +78,6 @@ function ResumenPedido({ subtotal, descuento, onAplicarCupon, onPagar, deshabili
     );
 }
 
+
 export default ResumenPedido;
+

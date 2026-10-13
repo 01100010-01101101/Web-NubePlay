@@ -1,11 +1,14 @@
 import { obtenerComunas, regiones } from "../../data/regiones";
 
-function SelectorRegionComuna({ region, comuna, onChange, errores = {}, prefijoId = "" }) {
+
+function SelectorRegionComuna({ region, comuna, onChange, errores = {}, prefijoId = "", deshabilitado = false }) {
     const comunas = obtenerComunas(region);
+
 
     function claseEstado(campo) {
         return errores[campo] ? "is-invalid" : "";
     }
+
 
     return (
         <div className="row">
@@ -15,6 +18,7 @@ function SelectorRegionComuna({ region, comuna, onChange, errores = {}, prefijoI
                     id={`${prefijoId}region`}
                     className={`form-select ${claseEstado("region")}`}
                     value={region}
+                    disabled={deshabilitado}
                     onChange={evento => onChange({ region: evento.target.value, comuna: "" })}
                 >
                     <option value="">Seleccione Región...</option>
@@ -25,13 +29,14 @@ function SelectorRegionComuna({ region, comuna, onChange, errores = {}, prefijoI
                 {errores.region && <div className="invalid-feedback">{errores.region}</div>}
             </div>
 
+
             <div className="col-md-6 mb-3">
                 <label htmlFor={`${prefijoId}comuna`} className="form-label fw-semibold">Comuna</label>
                 <select
                     id={`${prefijoId}comuna`}
                     className={`form-select ${claseEstado("comuna")}`}
                     value={comuna}
-                    disabled={!region}
+                    disabled={deshabilitado || !region}
                     onChange={evento => onChange({ region, comuna: evento.target.value })}
                 >
                     <option value="">Seleccione Comuna...</option>
@@ -45,4 +50,6 @@ function SelectorRegionComuna({ region, comuna, onChange, errores = {}, prefijoI
     );
 }
 
+
 export default SelectorRegionComuna;
+
