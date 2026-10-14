@@ -1,20 +1,24 @@
-// Utilidades compartidas por las pruebas: montar componentes React en el DOM real del
-// navegador (Chrome, vía Karma), simular eventos del usuario y simular localStorage.
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
+import { AuthProvider } from "../context/AuthContext";
+import { CartProvider } from "../context/CartContext";
 
-// Indica a React que estamos en un entorno de pruebas (habilita act()).
+
+
+
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
 
 const montados = [];
 
-// Renderiza un elemento React en un <div> nuevo y lo devuelve junto a funciones de ayuda.
+
 export function montar(elemento) {
     const contenedor = document.createElement("div");
     document.body.appendChild(contenedor);
     const root = createRoot(contenedor);
     act(() => root.render(elemento));
+
 
     const montaje = {
         contenedor,
@@ -28,25 +32,37 @@ export function montar(elemento) {
     return montaje;
 }
 
-// Igual que montar(), pero dentro de un router en memoria (necesario para <Link>, useNavigate, etc.).
+
 export function montarConRouter(elemento, ruta = "/") {
-    // Los "future flags" solo evitan los avisos de migración a React Router v7 en la consola.
     const future = { v7_startTransition: true, v7_relativeSplatPath: true };
     return montar(createElement(MemoryRouter, { initialEntries: [ruta], future }, elemento));
 }
+export function montarConProveedores(elemento, ruta = "/") {
+    return montarConRouter(
+        createElement(AuthProvider, null, createElement(CartProvider, null, elemento)),
+        ruta
+    );
+}
 
-// Desmonta todo lo renderizado después de cada prueba para que no se mezclen entre sí.
+
+
+
 afterEach(() => {
     while (montados.length) montados.pop().desmontar();
 });
 
+
 export function click(elemento) {
     act(() => {
-        elemento.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+
+        elemento.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
     });
 }
 
-// React escucha el evento "input": se asigna el valor con el setter nativo para que React lo detecte.
+
+
+
 export function escribir(input, valor) {
     const prototipo = input instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
     act(() => {
@@ -55,6 +71,7 @@ export function escribir(input, valor) {
     });
 }
 
+
 export function seleccionar(select, valor) {
     act(() => {
         Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value").set.call(select, valor);
@@ -62,15 +79,16 @@ export function seleccionar(select, valor) {
     });
 }
 
+
 export function enviar(formulario) {
     act(() => {
         formulario.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     });
 }
 
-// MOCK de localStorage: reemplaza los métodos reales por espías de Jasmine que guardan
-// en un objeto en memoria. Así las pruebas no tocan los datos reales del navegador
-// y se puede verificar qué se guardó (expect(localStorage.setItem).toHaveBeenCalledWith(...)).
+
+
+
 export function simularLocalStorage(inicial = {}) {
     const almacen = { ...inicial };
     spyOn(Storage.prototype, "getItem").and.callFake(clave => (clave in almacen ? almacen[clave] : null));
@@ -80,7 +98,8 @@ export function simularLocalStorage(inicial = {}) {
     return almacen;
 }
 
-// Busca un botón por su texto visible.
+
 export function botonPorTexto(contenedor, texto) {
     return [...contenedor.querySelectorAll("button, a")].find(el => el.textContent.trim().includes(texto)) || null;
 }
+
