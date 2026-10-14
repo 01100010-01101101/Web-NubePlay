@@ -909,3 +909,63 @@ a {
 .barra-ranking .progress-bar {
     border-radius: 4px;
 }
+
+
+/* ---------- Carrusel de la página de inicio ---------- */
+/* La Navbar del inicio es fija: el carrusel deja espacio para no quedar tapado. */
+.carrusel-inicio {
+    padding-top: 72px;
+    background-color: var(--nubeplay-dark);
+}
+
+/* El hero ya no necesita el espacio para la Navbar porque el carrusel va arriba. */
+.carrusel-inicio + .hero-nubeplay {
+    padding-top: 80px;
+    min-height: auto;
+}
+
+.carrusel-nubeplay .carousel-item img {
+    height: 420px;
+    object-fit: cover;
+    filter: brightness(0.55);
+}
+
+.carrusel-nubeplay .carousel-item {
+    animation: carrusel-aparecer 0.6s ease;
+}
+
+@keyframes carrusel-aparecer {
+    from { opacity: 0.3; }
+    to { opacity: 1; }
+}
+
+.carrusel-nubeplay .carousel-caption {
+    bottom: 50%;
+    transform: translateY(50%);
+}
+
+.carrusel-nubeplay .carousel-caption h2 {
+    font-size: 2.6rem;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.carrusel-nubeplay .carousel-caption p {
+    font-size: 1.15rem;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+@media (max-width: 576px) {
+    .carrusel-nubeplay .carousel-item img {
+        height: 260px;
+    }
+
+    .carrusel-nubeplay .carousel-caption h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .carrusel-nubeplay .carousel-item {
+        animation: none;
+    }
+}

@@ -2,7 +2,9 @@ import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import ListaProductos from "../components/productos/ListaProductos";
 import AvisoFlotante from "../components/common/AvisoFlotante";
+import Carrusel from "../components/common/Carrusel";
 import { obtenerProductos } from "../data/db";
+import { diapositivasInicio } from "../data/carrusel";
 import { useCart } from "../context/CartContext";
 import { useAviso } from "../hooks/useAviso";
 
@@ -30,6 +32,10 @@ function Inicio() {
 
     return (
         <>
+            <section className="carrusel-inicio">
+                <Carrusel diapositivas={diapositivasInicio} />
+            </section>
+
             <section className="hero-nubeplay">
                 <div className="container">
                     <div className="row align-items-center">
