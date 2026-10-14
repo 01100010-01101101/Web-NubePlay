@@ -76,7 +76,7 @@ describe("Paneles del administrador", () => {
             expect(contenedor.querySelector(".modal-title").textContent).toBe("Agregar Producto");
 
 
-            escribir(contenedor.querySelector("#prodCodigo"), "NSW-001");
+            escribir(contenedor.querySelector("#prodCodigo"), "TST-001");
             escribir(contenedor.querySelector("#prodNombre"), "Nintendo Switch");
             escribir(contenedor.querySelector("#prodPrecio"), "299990");
             escribir(contenedor.querySelector("#prodStock"), "6");
@@ -192,7 +192,7 @@ describe("Paneles del administrador", () => {
             click(contenedor.querySelector("[aria-label='Eliminar categoría Consolas']"));
 
 
-            expect(mostrar).toHaveBeenCalledWith(jasmine.stringContaining("tiene 2 producto(s)"), "danger");
+            expect(mostrar).toHaveBeenCalledWith(jasmine.stringContaining(`tiene ${productosIniciales.filter(p => p.categoria === "consolas").length} producto(s)`), "danger");
             expect(guardados(CLAVES.categorias).length).toBe(3);
         });
 

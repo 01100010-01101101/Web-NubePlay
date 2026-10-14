@@ -67,7 +67,7 @@ describe("Páginas de la tienda", () => {
             expect(contenedor.querySelectorAll(".producto-card").length).toBe(productosIniciales.length);
 
 
-            escribir(contenedor.querySelector("[aria-label='Buscar producto']"), "xbox");
+            escribir(contenedor.querySelector("[aria-label='Buscar producto']"), "series x");
             expect(contenedor.querySelectorAll(".producto-card").length).toBe(1);
 
 
@@ -80,7 +80,7 @@ describe("Páginas de la tienda", () => {
 
         it("muestra un aviso de error si el producto ya no tiene stock suficiente", () => {
             const { contenedor } = montarPagina("/productos", <Productos />, "/productos");
-            escribir(contenedor.querySelector("[aria-label='Buscar producto']"), "xbox");
+            escribir(contenedor.querySelector("[aria-label='Buscar producto']"), "series x");
             const boton = botonPorTexto(contenedor, "Agregar al Carrito");
 
 
@@ -114,7 +114,8 @@ describe("Páginas de la tienda", () => {
             const nombres = [...contenedor.querySelectorAll(".card-title")].map(t => t.textContent);
 
 
-            expect(nombres).toEqual(["PlayStation 5", "Xbox Series X"]);
+            const esperados = productosIniciales.filter(p => p.categoria === "consolas").map(p => p.nombre);
+            expect(nombres).toEqual(esperados);
             expect(contenedor.querySelector("a[aria-current='page']").textContent).toContain("Consolas");
         });
 
