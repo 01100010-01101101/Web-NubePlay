@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import LayoutTienda from "./components/layout/LayoutTienda";
 import RutaProtegida from "./components/common/RutaProtegida";
+import SinVendedor from "./components/common/SinVendedor";
 import ScrollAlInicio from "./components/common/ScrollAlInicio";
 import Inicio from "./pages/Inicio";
 import Productos from "./pages/Productos";
@@ -22,6 +23,10 @@ import NoEncontrado from "./pages/NoEncontrado";
 
 
 
+
+
+
+
 function App() {
     return (
         <>
@@ -33,9 +38,13 @@ function App() {
                     <Route path="/productos/:id" element={<DetalleProducto />} />
                     <Route path="/categorias" element={<Categorias />} />
                     <Route path="/categorias/:categoria" element={<Categorias />} />
-                    <Route path="/carrito" element={<Carrito />} />
-                    <Route path="/checkout" element={<Checkout />} />
-                    <Route path="/compra-exitosa/:id" element={<CompraExitosa />} />
+                    {/* El Vendedor no compra: el carrito y el pago no existen para él. */}
+                    <Route path="/carrito" element={<SinVendedor><Carrito /></SinVendedor>} />
+                    <Route path="/checkout" element={<SinVendedor><Checkout /></SinVendedor>} />
+                    <Route
+                        path="/compra-exitosa/:id"
+                        element={<RutaProtegida roles={["admin", "cliente"]}><CompraExitosa /></RutaProtegida>}
+                    />
                     <Route path="/pago-error" element={<PagoError />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/registro" element={<Registro />} />
@@ -49,7 +58,12 @@ function App() {
 
 
 
-                <Route path="/admin" element={<RutaProtegida><Admin /></RutaProtegida>} />
+
+
+
+
+                {/* Panel: solo Administrador y Vendedor (el Cliente es redirigido a la tienda). */}
+                <Route path="/admin" element={<RutaProtegida roles={["admin", "vendedor"]}><Admin /></RutaProtegida>} />
             </Routes>
         </>
     );
@@ -58,5 +72,13 @@ function App() {
 
 
 
+
+
+
+
 export default App;
+
+
+
+
 

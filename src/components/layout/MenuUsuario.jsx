@@ -2,9 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 
+
+
 function MenuUsuario({ usuario, esAdmin, onCerrarSesion, onNavegar }) {
     const [abierto, setAbierto] = useState(false);
     const contenedor = useRef(null);
+
+
 
 
     useEffect(() => {
@@ -16,10 +20,14 @@ function MenuUsuario({ usuario, esAdmin, onCerrarSesion, onNavegar }) {
     }, []);
 
 
+
+
     function elegir(accion) {
         setAbierto(false);
         accion?.();
     }
+
+
 
 
     return (
@@ -34,13 +42,15 @@ function MenuUsuario({ usuario, esAdmin, onCerrarSesion, onNavegar }) {
             </button>
 
 
+
+
             <ul className={`dropdown-menu dropdown-menu-end ${abierto ? "show" : ""}`}>
-                <li><span className="dropdown-item-text small text-muted">{usuario.correo}</span></li>
+                <li><span className="dropdown-item-text small text-muted">{usuario.correo} · {usuario.rol}</span></li>
                 <li><hr className="dropdown-divider" /></li>
                 {esAdmin && (
                     <li>
                         <Link className="dropdown-item" to="/admin" onClick={() => elegir(onNavegar)}>
-                            <i className="bi bi-speedometer2 me-2"></i> Panel Admin
+                            <i className="bi bi-speedometer2 me-2"></i> Panel de gestión
                         </Link>
                     </li>
                 )}
@@ -55,5 +65,11 @@ function MenuUsuario({ usuario, esAdmin, onCerrarSesion, onNavegar }) {
 }
 
 
+
+
 export default MenuUsuario;
+
+
+
+
 

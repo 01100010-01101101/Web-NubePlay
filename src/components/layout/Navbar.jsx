@@ -7,6 +7,10 @@ import MenuUsuario from "./MenuUsuario";
 
 
 
+
+
+
+
 const ENLACES_TIENDA = [
     { ruta: "/", texto: "Inicio", icono: "bi-house", exacto: true },
     { ruta: "/productos", texto: "Productos", icono: "bi-controller" },
@@ -19,10 +23,18 @@ const ENLACES_TIENDA = [
 
 
 
+
+
+
+
 const ENLACES_VENDEDOR = [
     { ruta: "/productos", texto: "Productos", icono: "bi-controller" },
     { ruta: "/admin?tab=ordenes", texto: "Órdenes", icono: "bi-receipt" }
 ];
+
+
+
+
 
 
 
@@ -36,8 +48,16 @@ function Navbar({ fija = false }) {
 
 
 
+
+
+
+
     const enlaces = esVendedor ? ENLACES_VENDEDOR : ENLACES_TIENDA;
     const cerrarMenu = () => setMenuAbierto(false);
+
+
+
+
 
 
 
@@ -51,12 +71,20 @@ function Navbar({ fija = false }) {
 
 
 
+
+
+
+
     return (
         <nav className={`navbar navbar-expand-xl navbar-dark navbar-nubeplay ${fija ? "fixed-top" : ""}`}>
             <div className="container">
                 <Link className="navbar-brand fw-bold" to="/" onClick={cerrarMenu}>
                     <i className="bi bi-cloud-fill"></i> NUBEPLAY
                 </Link>
+
+
+
+
 
 
 
@@ -74,6 +102,10 @@ function Navbar({ fija = false }) {
 
 
 
+
+
+
+
                 <div className={`collapse navbar-collapse ${menuAbierto ? "show" : ""}`}>
                     <ul className="navbar-nav ms-auto align-items-xl-center">
                         {enlaces.map(enlace => (
@@ -83,6 +115,10 @@ function Navbar({ fija = false }) {
                                 </NavLink>
                             </li>
                         ))}
+
+
+
+
 
 
 
@@ -101,11 +137,15 @@ function Navbar({ fija = false }) {
 
 
 
+
+
+
+
                         <li className="nav-item ms-xl-2 mt-2 mt-xl-0">
                             {usuario ? (
                                 <MenuUsuario
                                     usuario={usuario}
-                                    esAdmin={esAdmin}
+                                    esAdmin={esAdmin || esVendedor}
                                     onCerrarSesion={manejarCerrarSesion}
                                     onNavegar={cerrarMenu}
                                 />
@@ -122,6 +162,12 @@ function Navbar({ fija = false }) {
     );
 }
 export default Navbar;
+
+
+
+
+
+
 
 
 
