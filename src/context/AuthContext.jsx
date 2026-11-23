@@ -1,56 +1,100 @@
-import { createContext, useContext, useState } from "react";
-import * as db from "../data/db";
-import { esRolAdmin, esRolVendedor } from "../utils/formato";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { authApi } from "../api/servicios";
+import { borrarTokens, guardarTokens, obtenerTokens } from "../api/sesion";
+import { esRolAdmin, esRolCliente, esRolVendedor } from "../utils/formato";
 
 const AuthContext = createContext(null);
 
-// Compara la sesión guardada con la "base de datos": si el usuario fue eliminado o
-// desactivado se cierra la sesión, y siempre se usan su rol y datos actuales.
-export function validarSesion(sesion) {
-    if (!sesion) return null;
+// Gestión de la sesión en el frontend:
+// - Al iniciar sesión se guardan el accessToken y el refreshToken (src/api/sesion.js).
+// - Al recargar la página, si hay tokens guardados, se valida la sesión con GET /auth/me
+//   (si el accessToken venció, el cliente HTTP lo renueva solo con el refreshToken).
+//   Así el rol y el estado del usuario siempre vienen del backend, no del navegador.
+// - Si la renovación falla (refresh vencido, usuario desactivado o eliminado), la sesión se cierra.
+// - La sesión se sincroniza entre pestañas con el evento "storage".
+export function AuthProvider({ children }) {
+    const [usuario, setUsuario] = useState(null);
+    const [verificando, setVerificando] = useState(() => Boolean(obtenerTokens()));
 
-    const actual = db.obtenerUsuarioPorId(sesion.id);
-    if (!actual || actual.estado === "Inactivo") {
-        db.cerrarSesion();
-        return null;
+    const refrescarSesion = useCallback(async () => {
+        if (!obtenerTokens()) {
+            setUsuario(null);
+            return null;
+        }
+        try {
+            const actual = await authApi.yo();
+            setUsuario(actual);
+            return actual;
+        } catch (error) {
+            if (error.status === 401 || error.status === 403) borrarTokens();
+            setUsuario(null);
+            return null;
+        } finally {
+            setVerificando(false);
+        }
+    }, []);
+
+    // Restaurar la sesión al cargar la página.
+    useEffect(() => {
+        refrescarSesion();
+    }, [refrescarSesion]);
+
+    // Si los tokens se borran (refresh fallido o cierre en otra pestaña) se cierra la sesión aquí también.
+    useEffect(() => {
+        function alCambiarSesion() {
+            if (!obtenerTokens()) setUsuario(null);
+        }
+        function alCambiarStorage(evento) {
+            if (evento.key !== "sesion_nubeplay") return;
+            if (!evento.newValue) setUsuario(null);
+            else refrescarSesion();
+        }
+        window.addEventListener("sesion-cambiada", alCambiarSesion);
+        window.addEventListener("storage", alCambiarStorage);
+        return () => {
+            window.removeEventListener("sesion-cambiada", alCambiarSesion);
+            window.removeEventListener("storage", alCambiarStorage);
+        };
+    }, [refrescarSesion]);
+
+    // Guarda los JWT que entregó el backend (login normal o con Google) y deja al usuario conectado.
+    async function abrirSesion(peticion) {
+        try {
+            const respuesta = await peticion();
+            guardarTokens(respuesta);
+            setUsuario(respuesta.usuario);
+            return { ok: true, usuario: respuesta.usuario };
+        } catch (error) {
+            return {
+                ok: false,
+                tipo: error.status === 403 ? "warning" : "danger",
+                mensaje: error.message || "No se pudo iniciar sesión."
+            };
+        }
     }
 
-    db.guardarSesion(actual);
-    return actual;
-}
-
-export function AuthProvider({ children }) {
-    const [usuario, setUsuario] = useState(() => validarSesion(db.obtenerSesion()));
-
     function iniciarSesion(correo, password) {
-        const encontrado = db.buscarUsuarioPorCredenciales(correo.trim(), password.trim());
+        return abrirSesion(() => authApi.login(correo.trim(), password.trim()));
+    }
 
-        if (!encontrado) {
-            return { ok: false, tipo: "danger", mensaje: "Correo o contraseña incorrectos." };
-        }
-        if (encontrado.estado === "Inactivo") {
-            return { ok: false, tipo: "warning", mensaje: "Tu cuenta se encuentra inactiva. Contacta al soporte." };
-        }
-
-        db.guardarSesion(encontrado);
-        setUsuario(encontrado);
-        return { ok: true, usuario: encontrado };
+    // POST /auth/google con el ID token de Google: el backend lo verifica, crea o vincula la cuenta y entrega los JWT.
+    function iniciarSesionConGoogle(credential) {
+        return abrirSesion(() => authApi.google(credential));
     }
 
     function cerrarSesion() {
-        db.cerrarSesion();
+        borrarTokens();
         setUsuario(null);
-    }
-
-    function refrescarSesion() {
-        setUsuario(validarSesion(usuario));
     }
 
     const valor = {
         usuario,
+        verificando,
         esAdmin: esRolAdmin(usuario),
         esVendedor: esRolVendedor(usuario),
+        esCliente: esRolCliente(usuario),
         iniciarSesion,
+        iniciarSesionConGoogle,
         cerrarSesion,
         refrescarSesion
     };

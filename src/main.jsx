@@ -7,18 +7,18 @@ import "./style.css";
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
-import { inicializarDatos } from "./data/db";
-
-inicializarDatos();
+import { CatalogoProvider } from "./context/CatalogoContext";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
     <React.StrictMode>
-        <BrowserRouter basename="/Web-NubePlay">
-            <AuthProvider>
-                <CartProvider>
-                    <App />
-                </CartProvider>
-            </AuthProvider>
+        <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+            <CatalogoProvider>
+                <AuthProvider>
+                    <CartProvider>
+                        <App />
+                    </CartProvider>
+                </AuthProvider>
+            </CatalogoProvider>
         </BrowserRouter>
     </React.StrictMode>
 );
