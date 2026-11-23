@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Alerta from "../components/common/Alerta";
+import BotonGoogle from "../components/common/BotonGoogle";
 import { useAuth } from "../context/AuthContext";
 import { esRolAdmin, esRolVendedor } from "../utils/formato";
 import { validarCorreo, validarPassword } from "../utils/validaciones";
@@ -10,7 +11,7 @@ const CLAVE_RECORDAR = "recordar_correo";
 
 
 function Login() {
-    const { iniciarSesion } = useAuth();
+    const { iniciarSesion, iniciarSesionConGoogle } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -25,7 +26,10 @@ function Login() {
     );
 
 
-    function enviar(evento) {
+    const [enviando, setEnviando] = useState(false);
+
+
+    async function enviar(evento) {
         evento.preventDefault();
 
 
@@ -42,7 +46,10 @@ function Login() {
         }
 
 
-        const resultado = iniciarSesion(correo, password);
+        // POST /api/v1/auth/login -> el backend valida las credenciales y entrega los JWT.
+        setEnviando(true);
+        const resultado = await iniciarSesion(correo, password);
+        setEnviando(false);
         if (!resultado.ok) {
             setMensaje({ texto: resultado.mensaje, tipo: resultado.tipo });
             return;
@@ -55,7 +62,25 @@ function Login() {
             localStorage.removeItem(CLAVE_RECORDAR);
         }
 
+        redirigir(resultado);
+    }
 
+
+    // Inicio de sesión con Google: el backend verifica el token, crea o vincula la cuenta y entrega los JWT.
+    async function entrarConGoogle(credential) {
+        setEnviando(true);
+        setMensaje(null);
+        const resultado = await iniciarSesionConGoogle(credential);
+        setEnviando(false);
+        if (!resultado.ok) {
+            setMensaje({ texto: resultado.mensaje, tipo: resultado.tipo });
+            return;
+        }
+        redirigir(resultado);
+    }
+
+
+    function redirigir(resultado) {
         setMensaje({ texto: `¡Bienvenido/a ${resultado.usuario.nombre}! Redirigiendo...`, tipo: "success" });
 
 
@@ -141,10 +166,14 @@ function Login() {
                                 </div>
 
 
-                                <button type="submit" className="btn btn-primary w-100 py-2 fw-bold login-boton">
-                                    <i className="bi bi-box-arrow-in-right me-1"></i> Iniciar sesión
+                                <button type="submit" className="btn btn-primary w-100 py-2 fw-bold login-boton" disabled={enviando}>
+                                    {enviando
+                                        ? <><span className="spinner-border spinner-border-sm me-2" role="status"></span> Validando...</>
+                                        : <><i className="bi bi-box-arrow-in-right me-1"></i> Iniciar sesión</>}
                                 </button>
                             </form>
+
+                            <BotonGoogle texto="signin_with" onCredencial={entrarConGoogle} deshabilitado={enviando} />
 
 
                             <div className="auth-footer text-center mt-4 pt-3 border-top">

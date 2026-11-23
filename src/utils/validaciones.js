@@ -147,8 +147,11 @@ export function validarPerfil(datos, passwordGuardada) {
 
     const quiereCambiarPassword = datos.passwordNueva || datos.confirmarPassword;
     if (quiereCambiarPassword) {
-        if (datos.passwordActual !== passwordGuardada) {
-            errores.passwordActual = "La contraseña actual no es correcta.";
+        // La contraseña real solo la conoce el backend (cifrada con BCrypt): aquí solo se exige que venga.
+        if (passwordGuardada === undefined ? !datos.passwordActual : datos.passwordActual !== passwordGuardada) {
+            errores.passwordActual = passwordGuardada === undefined
+                ? "Ingresa tu contraseña actual."
+                : "La contraseña actual no es correcta.";
         }
         if (!validarPassword(datos.passwordNueva)) {
             errores.passwordNueva = "La nueva contraseña debe tener entre 4 y 10 caracteres.";
