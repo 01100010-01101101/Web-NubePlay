@@ -15,7 +15,7 @@ function FormularioUsuario({ usuario = {}, onGuardar, validarDuplicados, esNuevo
         direccion: usuario.direccion || "",
         region: usuario.region || "",
         comuna: usuario.comuna || "",
-        password: usuario.password || "",
+        password: "", // el backend nunca devuelve la contraseña; vacía = no se cambia
         rol: usuario.rol || "Cliente",
         estado: usuario.estado || "Activo"
     });
@@ -44,6 +44,8 @@ function FormularioUsuario({ usuario = {}, onGuardar, validarDuplicados, esNuevo
         };
 
         let nuevosErrores = validarUsuario(normalizado);
+        // Al editar, la contraseña es opcional: si se deja vacía se conserva la actual.
+        if (!esNuevo && !normalizado.password) delete nuevosErrores.password;
         if (Object.keys(nuevosErrores).length === 0 && validarDuplicados) {
             nuevosErrores = validarDuplicados(normalizado);
         }
@@ -85,7 +87,9 @@ function FormularioUsuario({ usuario = {}, onGuardar, validarDuplicados, esNuevo
 
             <div className="row g-3 mb-3">
                 <div className="col-md-4">
-                    <label htmlFor="password" className="form-label fw-semibold">Contraseña</label>
+                    <label htmlFor="password" className="form-label fw-semibold">
+                        {esNuevo ? "Contraseña" : "Nueva contraseña (opcional)"}
+                    </label>
                     <div className="input-group has-validation">
                         <input
                             type="text"

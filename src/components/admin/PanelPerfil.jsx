@@ -1,6 +1,6 @@
 import { useState } from "react";
 import CampoFormulario from "../common/CampoFormulario";
-import { actualizarUsuario } from "../../data/db";
+import { usuariosApi } from "../../api/servicios";
 import { validarPerfil } from "../../utils/validaciones";
 import { useAuth } from "../../context/AuthContext";
 
@@ -18,19 +18,27 @@ function PanelPerfil({ mostrar }) {
         if (errores[name]) setErrores({ ...errores, [name]: undefined });
     }
 
-    function guardar(evento) {
+    // PUT /api/v1/usuarios/me: el backend comprueba la contraseña actual (con BCrypt) antes de cambiarla.
+    async function guardar(evento) {
         evento.preventDefault();
-        const nuevosErrores = validarPerfil(datos, usuario.password);
+        const nuevosErrores = validarPerfil(datos);
         setErrores(nuevosErrores);
         if (Object.keys(nuevosErrores).length > 0) return;
 
-        const cambios = { nombre: datos.nombre.trim(), apellidos: datos.apellidos.trim() };
-        if (datos.passwordNueva) cambios.password = datos.passwordNueva;
-
-        actualizarUsuario(usuario.id, cambios);
-        refrescarSesion();
-        setDatos({ ...datos, ...CLAVES_VACIAS });
-        mostrar(datos.passwordNueva ? "Perfil y contraseña actualizados." : "Perfil actualizado.");
+        try {
+            await usuariosApi.actualizarPerfil({
+                nombre: datos.nombre.trim(),
+                apellidos: datos.apellidos.trim(),
+                passwordActual: datos.passwordActual || null,
+                passwordNueva: datos.passwordNueva || null
+            });
+            await refrescarSesion();
+            setDatos({ ...datos, ...CLAVES_VACIAS });
+            mostrar(datos.passwordNueva ? "Perfil y contraseña actualizados." : "Perfil actualizado.");
+        } catch (error) {
+            if (error.campo) setErrores({ [error.campo]: error.message });
+            else mostrar(error.message, "danger");
+        }
     }
 
     return (

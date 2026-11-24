@@ -1,13 +1,20 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import RankingBarras from "./RankingBarras";
 import TarjetaEstadistica from "./TarjetaEstadistica";
-import { obtenerNombreCategoria, obtenerOrdenes } from "../../data/db";
+import { obtenerNombreCategoria } from "../../data/db";
+import { boletasApi } from "../../api/servicios";
 import { formatearPrecio } from "../../utils/formato";
 import { productosMasVendidos, resumenVentas, ventasPorCategoria } from "../../utils/reportes";
 
 // Pestaña "Reportes" (solo admin): indicadores de ventas calculados desde las órdenes.
 function PanelReportes() {
-    const ordenes = useMemo(() => obtenerOrdenes(), []);
+    // GET /api/v1/boletas; las boletas anuladas no cuentan como venta.
+    const [todas, setTodas] = useState([]);
+    const [error, setError] = useState(null);
+    useEffect(() => {
+        boletasApi.listar().then(setTodas).catch(e => setError(e.message));
+    }, []);
+    const ordenes = todas.filter(orden => orden.estado !== "Anulada");
     const resumen = resumenVentas(ordenes);
     const topProductos = productosMasVendidos(ordenes, 5);
     const porCategoria = ventasPorCategoria(ordenes, obtenerNombreCategoria);
@@ -20,6 +27,7 @@ function PanelReportes() {
             </div>
 
             <div className="card-body bg-light">
+                {error && <div className="alert alert-danger" role="alert">{error}</div>}
                 <div className="row g-3 mb-3">
                     <div className="col-sm-6 col-xl-3">
                         <TarjetaEstadistica titulo="Total vendido" valor={formatearPrecio(resumen.totalVendido)} icono="bi-cash-stack" color="bg-white text-body" />

@@ -3,41 +3,49 @@ import TablaCategorias from "./TablaCategorias";
 import FormularioCategoria from "./FormularioCategoria";
 import Modal from "../common/Modal";
 import * as db from "../../data/db";
+import { useCatalogo } from "../../context/CatalogoContext";
+import { categoriasApi } from "../../api/servicios";
 
 // Pestaña "Categorías" (solo admin): crear, editar y eliminar categorías.
 function PanelCategorias({ mostrar, onCambio }) {
-    const [categorias, setCategorias] = useState(db.obtenerCategorias);
+    const { categorias, recargar: recargarCatalogo } = useCatalogo();
     // null = cerrado, {} = nueva categoría, {...categoria} = edición
     const [categoriaEditando, setCategoriaEditando] = useState(null);
     const esEdicion = Boolean(categoriaEditando?.valor);
 
-    function recargar() {
-        setCategorias(db.obtenerCategorias());
+    async function recargar() {
+        await recargarCatalogo();
         onCambio();
     }
 
-    function guardar(datos) {
-        if (esEdicion) {
-            db.actualizarCategoria(categoriaEditando.valor, datos);
-            mostrar(`Categoría "${datos.nombre}" actualizada.`);
-        } else {
-            db.crearCategoria(datos);
-            mostrar(`Categoría "${datos.nombre}" creada.`);
+    // POST /categorias o PUT /categorias/{id} (rol ADMIN).
+    async function guardar(datos) {
+        try {
+            if (esEdicion) {
+                await categoriasApi.actualizar(categoriaEditando.id, datos);
+                mostrar(`Categoría "${datos.nombre}" actualizada.`);
+            } else {
+                await categoriasApi.crear(datos);
+                mostrar(`Categoría "${datos.nombre}" creada.`);
+            }
+            setCategoriaEditando(null);
+            await recargar();
+        } catch (error) {
+            setCategoriaEditando(null);
+            mostrar(error.message, "danger");
         }
-        setCategoriaEditando(null);
-        recargar();
     }
 
-    function eliminar(categoria) {
+    // DELETE /categorias/{id}: el backend responde 409 si la categoría todavía tiene productos.
+    async function eliminar(categoria) {
         if (!window.confirm(`¿Eliminar la categoría "${categoria.nombre}"?`)) return;
-
-        const resultado = db.eliminarCategoria(categoria.valor);
-        if (!resultado.ok) {
-            mostrar(resultado.error, "danger");
-            return;
+        try {
+            await categoriasApi.eliminar(categoria.id);
+            await recargar();
+            mostrar(`Categoría "${categoria.nombre}" eliminada.`);
+        } catch (error) {
+            mostrar(error.message, "danger");
         }
-        recargar();
-        mostrar(`Categoría "${categoria.nombre}" eliminada.`);
     }
 
     return (

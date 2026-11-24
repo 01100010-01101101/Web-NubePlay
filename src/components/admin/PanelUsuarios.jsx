@@ -1,17 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import TablaUsuariosAdmin from "./TablaUsuariosAdmin";
 import FormularioUsuario from "./FormularioUsuario";
 import HistorialCompras from "./HistorialCompras";
 import Modal from "../common/Modal";
 import Buscador from "../common/Buscador";
-import * as db from "../../data/db";
+import { usuariosApi } from "../../api/servicios";
 import { limpiarRun } from "../../utils/validaciones";
 import { useAuth } from "../../context/AuthContext";
 
 // Pestaña "Usuarios" (solo admin): listar, buscar, crear, editar y eliminar usuarios.
+// Usa GET/POST/PUT/DELETE /api/v1/usuarios (todas exigen rol ADMIN en el backend).
 function PanelUsuarios({ mostrar, onCambio }) {
     const { usuario: usuarioActual, refrescarSesion } = useAuth();
-    const [usuarios, setUsuarios] = useState(db.obtenerUsuarios);
+    const [usuarios, setUsuarios] = useState([]);
+    const [cargando, setCargando] = useState(true);
     const [busqueda, setBusqueda] = useState("");
     // null = cerrado, {} = nuevo usuario, {...usuario} = edición
     const [usuarioEditando, setUsuarioEditando] = useState(null);
@@ -24,8 +26,23 @@ function PanelUsuarios({ mostrar, onCambio }) {
         `${u.nombre || ""} ${u.apellidos || ""} ${u.correo || ""} ${u.run || ""}`.toLowerCase().includes(texto)
     );
 
-    function recargar() {
-        setUsuarios(db.obtenerUsuarios());
+    async function cargar() {
+        try {
+            setUsuarios(await usuariosApi.listar());
+        } catch (error) {
+            mostrar(error.message, "danger");
+        } finally {
+            setCargando(false);
+        }
+    }
+
+    useEffect(() => {
+        cargar();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    async function recargar() {
+        await cargar();
         onCambio();
     }
 
@@ -40,27 +57,36 @@ function PanelUsuarios({ mostrar, onCambio }) {
         return {};
     }
 
-    function guardar(datos) {
-        if (esNuevo) {
-            db.crearUsuario(datos);
-            mostrar(`Usuario ${datos.correo} creado correctamente.`);
-        } else {
-            // En la cuenta propia se conservan el rol y el estado actuales.
-            const cambios = esPropio ? { ...datos, rol: usuarioEditando.rol, estado: usuarioEditando.estado } : datos;
-            db.actualizarUsuario(usuarioEditando.id, cambios);
-            if (esPropio) refrescarSesion();
-            mostrar("Usuario actualizado correctamente.");
+    async function guardar(datos) {
+        try {
+            if (esNuevo) {
+                await usuariosApi.crear(datos);
+                mostrar(`Usuario ${datos.correo} creado correctamente.`);
+            } else {
+                // En la cuenta propia se conservan el rol y el estado actuales (el backend también lo impide).
+                const cambios = esPropio ? { ...datos, rol: usuarioEditando.rol, estado: usuarioEditando.estado } : datos;
+                await usuariosApi.actualizar(usuarioEditando.id, cambios);
+                if (esPropio) await refrescarSesion();
+                mostrar("Usuario actualizado correctamente.");
+            }
+            setUsuarioEditando(null);
+            await recargar();
+        } catch (error) {
+            setUsuarioEditando(null);
+            mostrar(error.message, "danger");
         }
-        setUsuarioEditando(null);
-        recargar();
     }
 
-    function eliminar(usuario) {
+    async function eliminar(usuario) {
         if (String(usuario.id) === String(usuarioActual.id)) return;
         if (!window.confirm(`¿Eliminar al usuario ${usuario.correo}? Esta acción no se puede deshacer.`)) return;
-        db.eliminarUsuario(usuario.id);
-        recargar();
-        mostrar(`Usuario ${usuario.correo} eliminado.`);
+        try {
+            await usuariosApi.eliminar(usuario.id);
+            await recargar();
+            mostrar(`Usuario ${usuario.correo} eliminado.`);
+        } catch (error) {
+            mostrar(error.message, "danger");
+        }
     }
 
     return (
@@ -74,6 +100,8 @@ function PanelUsuarios({ mostrar, onCambio }) {
                 </div>
                 <Buscador valor={busqueda} onChange={setBusqueda} placeholder="Buscar por nombre, correo o RUN..." etiqueta="Buscar usuario" />
             </div>
+
+            {cargando && <div className="text-center text-muted py-3"><span className="spinner-border spinner-border-sm me-2"></span>Cargando usuarios...</div>}
 
             <TablaUsuariosAdmin
                 usuarios={visibles}

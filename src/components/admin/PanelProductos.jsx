@@ -3,13 +3,17 @@ import TablaProductosAdmin from "./TablaProductosAdmin";
 import FormularioProducto from "./FormularioProducto";
 import Modal from "../common/Modal";
 import Buscador from "../common/Buscador";
-import * as db from "../../data/db";
 import { useCart } from "../../context/CartContext";
+import { useCatalogo } from "../../context/CatalogoContext";
+import { productosApi } from "../../api/servicios";
 
 // Pestaña "Productos": inventario con búsqueda, filtro de stock crítico y CRUD (solo admin).
+// Los datos vienen de GET /api/v1/productos; crear/editar/eliminar usan POST/PUT/DELETE (rol ADMIN).
+// Para el Vendedor la tabla es de solo lectura (sin botones de agregar, editar ni eliminar).
 function PanelProductos({ esAdmin, soloCriticos, onSoloCriticosChange, mostrar, onCambio }) {
     const { sincronizar } = useCart();
-    const [productos, setProductos] = useState(db.obtenerProductos);
+    const { productos, categorias, recargar: recargarCatalogo } = useCatalogo();
+    const [guardando, setGuardando] = useState(false);
     const [busqueda, setBusqueda] = useState("");
     // null = cerrado, {} = nuevo producto, {...producto} = edición
     const [productoEditando, setProductoEditando] = useState(null);
@@ -20,8 +24,8 @@ function PanelProductos({ esAdmin, soloCriticos, onSoloCriticosChange, mostrar, 
         (producto.nombre.toLowerCase().includes(texto) || producto.codigo.toLowerCase().includes(texto))
     );
 
-    function recargar() {
-        setProductos(db.obtenerProductos());
+    async function recargar() {
+        await recargarCatalogo();
         sincronizar();
         onCambio();
     }
@@ -33,27 +37,39 @@ function PanelProductos({ esAdmin, soloCriticos, onSoloCriticosChange, mostrar, 
         return duplicado ? "Ya existe otro producto con ese código." : null;
     }
 
-    function guardar(datos) {
-        if (productoEditando.id) {
-            db.actualizarProducto(productoEditando.id, datos);
-        } else {
-            db.crearProducto(datos);
-        }
-        setProductoEditando(null);
-        recargar();
+    async function guardar(datos) {
+        setGuardando(true);
+        try {
+            if (productoEditando.id) {
+                await productosApi.actualizar(productoEditando.id, datos);
+            } else {
+                await productosApi.crear(datos);
+            }
+            setProductoEditando(null);
+            await recargar();
 
-        if (datos.stock <= datos.stockCritico) {
-            mostrar(`Advertencia: "${datos.nombre}" quedó en stock crítico.`, "warning");
-        } else {
-            mostrar("Producto guardado correctamente.");
+            if (datos.stock <= datos.stockCritico) {
+                mostrar(`Advertencia: "${datos.nombre}" quedó en stock crítico.`, "warning");
+            } else {
+                mostrar("Producto guardado correctamente.");
+            }
+        } catch (error) {
+            setProductoEditando(null);
+            mostrar(error.message, "danger");
+        } finally {
+            setGuardando(false);
         }
     }
 
-    function eliminar(producto) {
+    async function eliminar(producto) {
         if (!window.confirm(`¿Estás seguro de que deseas eliminar "${producto.nombre}"?`)) return;
-        db.eliminarProducto(producto.id);
-        recargar();
-        mostrar("Producto eliminado.");
+        try {
+            await productosApi.eliminar(producto.id);
+            await recargar();
+            mostrar("Producto eliminado.");
+        } catch (error) {
+            mostrar(error.message, "danger");
+        }
     }
 
     return (
@@ -104,11 +120,12 @@ function PanelProductos({ esAdmin, soloCriticos, onSoloCriticosChange, mostrar, 
                 <FormularioProducto
                     key={productoEditando?.id || "nuevo"}
                     producto={productoEditando?.id ? productoEditando : null}
-                    categorias={db.obtenerCategorias()}
+                    categorias={categorias}
                     validarCodigo={validarCodigo}
                     onGuardar={guardar}
                     onCancelar={() => setProductoEditando(null)}
                 />
+                {guardando && <p className="text-muted small mt-2 mb-0">Guardando en el servidor...</p>}
             </Modal>
         </>
     );

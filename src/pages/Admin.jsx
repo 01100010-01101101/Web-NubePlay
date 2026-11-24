@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import TarjetaEstadistica from "../components/admin/TarjetaEstadistica";
 import PanelProductos from "../components/admin/PanelProductos";
@@ -8,36 +8,54 @@ import PanelOrdenes from "../components/admin/PanelOrdenes";
 import PanelReportes from "../components/admin/PanelReportes";
 import PanelPerfil from "../components/admin/PanelPerfil";
 import Alerta from "../components/common/Alerta";
-import * as db from "../data/db";
 import { useAuth } from "../context/AuthContext";
+import { useCatalogo } from "../context/CatalogoContext";
+import { boletasApi, usuariosApi } from "../api/servicios";
 import { useAviso } from "../hooks/useAviso";
 
+// Permisos por pestaña (Anexo 1): el Vendedor solo ve Productos y Órdenes (en modo lectura);
+// el resto de las pestañas ni siquiera se dibujan para él.
 const PESTANAS = [
     { id: "productos", texto: "Productos", icono: "bi-box-seam", soloAdmin: false },
     { id: "categorias", texto: "Categorías", icono: "bi-tags", soloAdmin: true },
     { id: "usuarios", texto: "Usuarios", icono: "bi-person-lines-fill", soloAdmin: true },
     { id: "ordenes", texto: "Órdenes", icono: "bi-receipt", soloAdmin: false },
     { id: "reportes", texto: "Reportes", icono: "bi-bar-chart", soloAdmin: true },
-    { id: "perfil", texto: "Mi Perfil", icono: "bi-person-circle", soloAdmin: false }
+    { id: "perfil", texto: "Mi Perfil", icono: "bi-person-circle", soloAdmin: true }
 ];
 
 // Panel de administración: estadísticas, pestañas y el panel de la pestaña activa.
 // Cada pestaña es un componente propio que maneja sus datos y modales.
 function Admin() {
-    const { esAdmin, cerrarSesion } = useAuth();
+    const { usuario, esAdmin, cerrarSesion } = useAuth();
+    const { productos } = useCatalogo();
     const navigate = useNavigate();
     const [parametros, setParametros] = useSearchParams();
     const { aviso, mostrar, ocultar } = useAviso(4000);
     // Se incrementa cuando un panel modifica datos, para recalcular las estadísticas.
-    const [, setVersion] = useState(0);
-    const notificarCambio = () => setVersion(version => version + 1);
+    const [version, setVersion] = useState(0);
+    const notificarCambio = () => setVersion(v => v + 1);
+    const [conteos, setConteos] = useState({ usuarios: "…", ordenes: "…" });
+
+    // Contadores de las tarjetas: GET /boletas (Admin y Vendedor) y GET /usuarios (solo Admin).
+    useEffect(() => {
+        let activo = true;
+        boletasApi.listar()
+            .then(lista => activo && setConteos(c => ({ ...c, ordenes: lista.length })))
+            .catch(() => activo && setConteos(c => ({ ...c, ordenes: "—" })));
+        if (esAdmin) {
+            usuariosApi.listar()
+                .then(lista => activo && setConteos(c => ({ ...c, usuarios: lista.length })))
+                .catch(() => activo && setConteos(c => ({ ...c, usuarios: "—" })));
+        }
+        return () => { activo = false; };
+    }, [esAdmin, version]);
 
     const pestanasVisibles = PESTANAS.filter(pestana => esAdmin || !pestana.soloAdmin);
     const pestanaSolicitada = parametros.get("tab");
     const pestanaActiva = pestanasVisibles.some(p => p.id === pestanaSolicitada) ? pestanaSolicitada : "productos";
     const soloCriticos = parametros.get("criticos") === "1";
 
-    const productos = db.obtenerProductos();
     const productosCriticos = productos.filter(p => p.stock <= p.stockCritico).length;
 
     function irA(tab, extra = {}) {
@@ -57,9 +75,13 @@ function Admin() {
             <nav className="navbar navbar-dark bg-dark shadow-sm">
                 <div className="container flex-wrap gap-2">
                     <Link className="navbar-brand fw-bold text-primary" to="/">
-                        <i className="bi bi-cloud-fill"></i> NUBEPLAY <span className="badge bg-danger ms-1 fs-6">Admin</span>
+                        <i className="bi bi-cloud-fill"></i> NUBEPLAY{" "}
+                        <span className={`badge ms-1 fs-6 ${esAdmin ? "bg-danger" : "bg-warning text-dark"}`}>{esAdmin ? "Admin" : "Vendedor"}</span>
                     </Link>
                     <div className="d-flex align-items-center gap-3">
+                        <span className="text-white-50 small d-none d-md-inline">
+                            <i className="bi bi-person-circle me-1"></i>{usuario?.nombre} ({usuario?.rol})
+                        </span>
                         {esAdmin && (
                             <Link className="nav-link text-white" to="/"><i className="bi bi-house me-1"></i> Ver Tienda</Link>
                         )}
@@ -85,12 +107,12 @@ function Admin() {
                     </div>
                     {esAdmin && (
                         <div className="col-6 col-lg-3">
-                            <TarjetaEstadistica titulo="Usuarios Registrados" valor={db.obtenerUsuarios().length} icono="bi-people"
+                            <TarjetaEstadistica titulo="Usuarios Registrados" valor={conteos.usuarios} icono="bi-people"
                                 color="bg-success text-white" onClick={() => irA("usuarios")} />
                         </div>
                     )}
                     <div className="col-6 col-lg-3">
-                        <TarjetaEstadistica titulo="Órdenes" valor={db.obtenerOrdenes().length} icono="bi-receipt"
+                        <TarjetaEstadistica titulo="Órdenes" valor={conteos.ordenes} icono="bi-receipt"
                             color="bg-info text-dark" onClick={() => irA("ordenes")} />
                     </div>
                 </div>
@@ -122,7 +144,7 @@ function Admin() {
                     )}
                     {pestanaActiva === "categorias" && <PanelCategorias {...propsPanel} />}
                     {pestanaActiva === "usuarios" && <PanelUsuarios {...propsPanel} />}
-                    {pestanaActiva === "ordenes" && <PanelOrdenes />}
+                    {pestanaActiva === "ordenes" && <PanelOrdenes {...propsPanel} esAdmin={esAdmin} />}
                     {pestanaActiva === "reportes" && <PanelReportes />}
                     {pestanaActiva === "perfil" && <PanelPerfil {...propsPanel} />}
                 </div>
