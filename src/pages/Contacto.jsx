@@ -11,7 +11,7 @@ export function validarContacto(datos) {
         errores.nombre = "El nombre es requerido (máximo 100 caracteres).";
     }
     if (datos.correo.trim() !== "" && !validarCorreo(datos.correo)) {
-        errores.correo = "Si ingresas un correo, debe ser @duoc.cl, @profesor.duoc.cl o @gmail.com (máx. 100 caracteres).";
+        errores.correo = "Si ingresas un correo, debe ser @duoc.cl, @profesor.duoc.cl, @duocuc.cl o @gmail.com (máx. 100 caracteres).";
     }
     if (!validarTexto(datos.comentario, 500)) {
         errores.comentario = "El mensaje es requerido (máximo 500 caracteres).";

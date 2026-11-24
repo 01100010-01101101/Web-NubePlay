@@ -1,5 +1,4 @@
-const DOMINIOS_PERMITIDOS = ["@duoc.cl", "@profesor.duoc.cl", "@gmail.com"];
-
+const DOMINIOS_PERMITIDOS = ["@duoc.cl", "@duocuc.cl", "@profesor.duoc.cl", "@gmail.com"];
 export function limpiarRun(run) {
     return String(run || "")
         .trim()
@@ -59,7 +58,7 @@ export function validarUsuario(datos, { confirmarPassword = false } = {}) {
         errores.apellidos = "Los apellidos son requeridos (máx. 100 caracteres).";
     }
     if (!validarCorreo(datos.correo)) {
-        errores.correo = "Debe ser un correo @duoc.cl, @profesor.duoc.cl o @gmail.com (máx. 100 caracteres).";
+        errores.correo = "Debe ser un correo @duoc.cl, @profesor.duoc.cl, @duocuc.cl o @gmail.com (máx. 100 caracteres).";
     }
     if (!validarPassword(datos.password)) {
         errores.password = "La contraseña debe tener entre 4 y 10 caracteres.";

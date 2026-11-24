@@ -108,7 +108,7 @@ export function simularServidor(opciones = {}) {
         if (ruta === "/auth/google" && metodo === "POST") {
             const [, sub, correo] = String(cuerpo.credential).split("|");
             if (!sub || !correo) return error(401, "No se pudo validar la cuenta de Google. Intenta nuevamente.");
-            if (!/@(duoc\.cl|profesor\.duoc\.cl|gmail\.com)$/i.test(correo)) {
+            if (!/@(duoc\.cl|duocuc\.cl|profesor\.duoc\.cl|gmail\.com)$/i.test(correo)) {
                 return error(403, "Solo se aceptan cuentas @duoc.cl, @profesor.duoc.cl o @gmail.com.");
             }
             let u = estado.usuarios.find(x => x.googleId === sub) || estado.usuarios.find(x => x.correo === correo);

@@ -44,7 +44,7 @@ export function validarCheckout(datos) {
         errores.apellidos = "Los apellidos son requeridos (máx. 100 caracteres).";
     }
     if (!validarCorreo(datos.correo)) {
-        errores.correo = "Debe ser un correo @duoc.cl, @profesor.duoc.cl o @gmail.com.";
+        errores.correo = "Debe ser un correo @duoc.cl, @profesor.duoc.cl, @duocuc.cl o @gmail.com.";
     }
     if (!validarTexto(datos.calle, 300)) {
         errores.calle = "La calle es requerida (máx. 300 caracteres).";

@@ -129,7 +129,7 @@ function Login() {
                                             onChange={evento => { setCorreo(evento.target.value); setMensaje(null); }}
                                         />
                                         <div className="invalid-feedback">
-                                            Debe ser un correo válido (@duoc.cl, @profesor.duoc.cl o @gmail.com) y máx. 100 caracteres.
+                                            Debe ser un correo válido (@duoc.cl, @profesor.duoc.cl, @duocuc.cl o @gmail.com) y máx. 100 caracteres.
                                         </div>
                                     </div>
                                 </div>
