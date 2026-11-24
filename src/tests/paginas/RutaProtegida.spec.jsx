@@ -1,52 +1,72 @@
-// PRUEBAS DE NAVEGACIÓN PROTEGIDA: solo Administrador o Vendedor pueden entrar al panel.
+// PRUEBAS DE NAVEGACIÓN PROTEGIDA: acceso a rutas según el rol que entrega el backend (GET /auth/me).
 import { Route, Routes } from "react-router-dom";
 import RutaProtegida from "../../components/common/RutaProtegida";
+import SinVendedor from "../../components/common/SinVendedor";
 import { AuthProvider } from "../../context/AuthContext";
-import { CLAVES } from "../../data/db";
 import { montarConRouter, simularLocalStorage } from "../utilidades";
+import { esperarApi, sesionGuardada, simularServidor, USUARIOS_PRUEBA } from "../servidorFalso";
 
-const USUARIOS = [
-    { id: 1, nombre: "Admin", correo: "admin@duoc.cl", rol: "Administrador", estado: "Activo" },
-    { id: 2, nombre: "Vende", correo: "vende@duoc.cl", rol: "Vendedor", estado: "Activo" },
-    { id: 3, nombre: "Cliente", correo: "cli@gmail.com", rol: "Cliente", estado: "Activo" },
-    { id: 4, nombre: "Baja", correo: "baja@duoc.cl", rol: "Administrador", estado: "Inactivo" }
-];
+async function montarConSesion(sesion, ruta = "/admin") {
+    const almacen = simularLocalStorage();
+    simularServidor();
+    if (sesion) sesionGuardada(sesion);
 
-function montarConSesion(sesion) {
-    const datos = { [CLAVES.usuarios]: JSON.stringify(USUARIOS) };
-    if (sesion) datos[CLAVES.sesion] = JSON.stringify(sesion);
-    simularLocalStorage(datos);
-
-    return montarConRouter(
+    const montaje = montarConRouter(
         <AuthProvider>
             <Routes>
-                <Route path="/admin" element={<RutaProtegida><h1>Panel admin</h1></RutaProtegida>} />
+                <Route path="/admin" element={<RutaProtegida roles={["admin", "vendedor"]}><h1>Panel admin</h1></RutaProtegida>} />
+                <Route path="/carrito" element={<SinVendedor><h1>Carrito</h1></SinVendedor>} />
                 <Route path="/login" element={<h1>Login</h1>} />
+                <Route path="/" element={<h1>Tienda</h1>} />
             </Routes>
         </AuthProvider>,
-        "/admin"
+        ruta
     );
+    return { ...montaje, almacen, montajeInicial: montaje.contenedor.textContent };
 }
 
 describe("RutaProtegida", () => {
-    it("redirige al login si no hay sesión", () => {
-        expect(montarConSesion(null).contenedor.textContent).toBe("Login");
+    it("redirige al login si no hay sesión", async () => {
+        const { contenedor } = await montarConSesion(null);
+        await esperarApi();
+        expect(contenedor.textContent).toBe("Login");
     });
 
-    it("permite el acceso al Administrador", () => {
-        expect(montarConSesion(USUARIOS[0]).contenedor.textContent).toBe("Panel admin");
+    it("mientras valida la sesión guardada muestra un indicador (no expulsa al usuario)", async () => {
+        const { montajeInicial, contenedor } = await montarConSesion(USUARIOS_PRUEBA.admin);
+        expect(montajeInicial).not.toBe("Login");
+        await esperarApi();
+        expect(contenedor.textContent).toBe("Panel admin");
     });
 
-    it("permite el acceso al Vendedor", () => {
-        expect(montarConSesion(USUARIOS[1]).contenedor.textContent).toBe("Panel admin");
+    it("permite el acceso al Vendedor", async () => {
+        const { contenedor } = await montarConSesion(USUARIOS_PRUEBA.vendedor);
+        await esperarApi();
+        expect(contenedor.textContent).toBe("Panel admin");
     });
 
-    it("bloquea a un Cliente", () => {
-        expect(montarConSesion(USUARIOS[2]).contenedor.textContent).toBe("Login");
+    it("envía a un Cliente de vuelta a la tienda", async () => {
+        const { contenedor } = await montarConSesion(USUARIOS_PRUEBA.cliente);
+        await esperarApi();
+        expect(contenedor.textContent).toBe("Tienda");
     });
 
-    it("bloquea y cierra la sesión de un administrador desactivado", () => {
-        expect(montarConSesion(USUARIOS[3]).contenedor.textContent).toBe("Login");
-        expect(localStorage.removeItem).toHaveBeenCalledWith(CLAVES.sesion);
+    it("cierra la sesión de un usuario desactivado (el backend rechaza su token)", async () => {
+        const { contenedor, almacen } = await montarConSesion(USUARIOS_PRUEBA.inactivo);
+        await esperarApi(40);
+        expect(contenedor.textContent).toBe("Login");
+        expect(almacen.sesion_nubeplay).toBeUndefined();
+    });
+
+    it("SinVendedor saca al Vendedor del carrito y lo lleva a sus órdenes", async () => {
+        const { contenedor } = await montarConSesion(USUARIOS_PRUEBA.vendedor, "/carrito");
+        await esperarApi();
+        expect(contenedor.textContent).toBe("Panel admin");
+    });
+
+    it("SinVendedor deja pasar al Cliente al carrito", async () => {
+        const { contenedor } = await montarConSesion(USUARIOS_PRUEBA.cliente, "/carrito");
+        await esperarApi();
+        expect(contenedor.textContent).toBe("Carrito");
     });
 });

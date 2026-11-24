@@ -3,6 +3,9 @@ import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { AuthProvider } from "../context/AuthContext";
 import { CartProvider } from "../context/CartContext";
+import { CatalogoProvider } from "../context/CatalogoContext";
+import { establecerCatalogo, obtenerCategorias, obtenerProductos } from "../data/db";
+import { categoriasIniciales, productosIniciales } from "../data/semillas";
 
 
 
@@ -37,12 +40,24 @@ export function montarConRouter(elemento, ruta = "/") {
     const future = { v7_startTransition: true, v7_relativeSplatPath: true };
     return montar(createElement(MemoryRouter, { initialEntries: [ruta], future }, elemento));
 }
+// Monta con los proveedores de la app. El catálogo parte con lo que haya en la caché
+// (por defecto las semillas; ver beforeEach más abajo o simularServidor()).
 export function montarConProveedores(elemento, ruta = "/") {
+    const inicial = { productos: obtenerProductos(), categorias: obtenerCategorias() };
     return montarConRouter(
-        createElement(AuthProvider, null, createElement(CartProvider, null, elemento)),
+        createElement(CatalogoProvider, { inicial },
+            createElement(AuthProvider, null, createElement(CartProvider, null, elemento))),
         ruta
     );
 }
+
+// Antes de cada prueba la caché del catálogo vuelve a las semillas.
+beforeEach(() => {
+    establecerCatalogo({
+        productos: productosIniciales.map(p => ({ ...p })),
+        categorias: categoriasIniciales.map((c, i) => ({ id: i + 1, ...c }))
+    });
+});
 
 
 

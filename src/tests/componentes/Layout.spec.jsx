@@ -3,8 +3,8 @@ import { Route, Routes } from "react-router-dom";
 import Footer from "../../components/layout/Footer";
 import MenuUsuario from "../../components/layout/MenuUsuario";
 import Navbar from "../../components/layout/Navbar";
-import { CLAVES } from "../../data/db";
 import { botonPorTexto, click, montarConProveedores, montarConRouter, simularLocalStorage } from "../utilidades";
+import { esperarApi, sesionGuardada, simularServidor, USUARIOS_PRUEBA } from "../servidorFalso";
 
 
 const ADMIN = { id: 1, nombre: "Admin", correo: "admin@duoc.cl", rol: "Administrador", estado: "Activo" };
@@ -61,8 +61,8 @@ describe("MenuUsuario", () => {
 
 
     it("solo muestra 'Panel Admin' a los administradores", () => {
-        expect(montarMenu().contenedor.textContent).toContain("Panel Admin");
-        expect(montarMenu({ esAdmin: false, usuario: VENDEDOR }).contenedor.textContent).not.toContain("Panel Admin");
+        expect(montarMenu().contenedor.textContent).toContain("Panel de gestión");
+        expect(montarMenu({ esAdmin: false, usuario: VENDEDOR }).contenedor.textContent).not.toContain("Panel de gestión");
     });
 
 
@@ -73,7 +73,7 @@ describe("MenuUsuario", () => {
 
 
         click(contenedor.querySelector("button"));
-        click(botonPorTexto(contenedor, "Panel Admin"));
+        click(botonPorTexto(contenedor, "Panel de gestión"));
         expect(onNavegar).toHaveBeenCalled();
 
 
@@ -85,10 +85,10 @@ describe("MenuUsuario", () => {
 
 
 describe("Navbar", () => {
-    function montarNavbar(sesion) {
-        const datos = { [CLAVES.usuarios]: JSON.stringify([ADMIN, VENDEDOR]) };
-        if (sesion) datos[CLAVES.sesion] = JSON.stringify(sesion);
-        const almacen = simularLocalStorage(datos);
+    async function montarNavbar(sesion) {
+        const almacen = simularLocalStorage();
+        simularServidor();
+        if (sesion) sesionGuardada(sesion);
         const montaje = montarConProveedores(
             <>
                 <Navbar />
@@ -98,12 +98,13 @@ describe("Navbar", () => {
                 </Routes>
             </>
         );
+        await esperarApi();
         return { ...montaje, almacen };
     }
 
 
-    it("sin sesión muestra los enlaces de la tienda, el carrito y 'Iniciar sesión'", () => {
-        const { contenedor } = montarNavbar(null);
+    it("sin sesión muestra los enlaces de la tienda, el carrito y 'Iniciar sesión'", async () => {
+        const { contenedor } = await montarNavbar(null);
         const textos = [...contenedor.querySelectorAll(".nav-link")].map(a => a.textContent.trim());
 
 
@@ -113,8 +114,8 @@ describe("Navbar", () => {
     });
 
 
-    it("al vendedor le muestra solo Productos y Órdenes, sin carrito", () => {
-        const { contenedor } = montarNavbar(VENDEDOR);
+    it("al vendedor le muestra solo Productos y Órdenes, sin carrito", async () => {
+        const { contenedor } = await montarNavbar(USUARIOS_PRUEBA.vendedor);
         const textos = [...contenedor.querySelectorAll(".nav-link")].map(a => a.textContent.trim());
 
 
@@ -123,8 +124,8 @@ describe("Navbar", () => {
     });
 
 
-    it("el botón hamburguesa abre y cierra el menú en móviles", () => {
-        const { contenedor } = montarNavbar(null);
+    it("el botón hamburguesa abre y cierra el menú en móviles", async () => {
+        const { contenedor } = await montarNavbar(null);
         const toggler = contenedor.querySelector(".navbar-toggler");
 
 
@@ -135,15 +136,16 @@ describe("Navbar", () => {
     });
 
 
-    it("cerrar sesión borra la sesión guardada y lleva al login", () => {
-        const { contenedor, almacen } = montarNavbar(ADMIN);
+    it("cerrar sesión borra los tokens guardados y lleva al login", async () => {
+        const { contenedor, almacen } = await montarNavbar(USUARIOS_PRUEBA.admin);
+        expect(almacen.sesion_nubeplay).toBeDefined();
 
 
         click(contenedor.querySelector(".dropdown-toggle"));
         click(botonPorTexto(contenedor, "Cerrar sesión"));
 
 
-        expect(almacen[CLAVES.sesion]).toBeUndefined();
+        expect(almacen.sesion_nubeplay).toBeUndefined();
         expect(contenedor.querySelector("h1").textContent).toBe("Login");
     });
 });

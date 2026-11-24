@@ -10,10 +10,11 @@ import Nosotros from "../../pages/Nosotros";
 import NoEncontrado from "../../pages/NoEncontrado";
 import CompraExitosa from "../../pages/CompraExitosa";
 import PagoError from "../../pages/PagoError";
-import { CLAVES, crearOrden, inicializarDatos } from "../../data/db";
+import { CLAVES, establecerCatalogo } from "../../data/db";
 import { blogs } from "../../data/blogs";
 import { productosIniciales } from "../../data/semillas";
 import { botonPorTexto, click, enviar, escribir, montarConProveedores, seleccionar, simularLocalStorage } from "../utilidades";
+import { esperarApi, sesionGuardada, simularServidor, USUARIOS_PRUEBA } from "../servidorFalso";
 
 
 // Monta una página en su ruta (con parámetros) dentro de los proveedores.
@@ -39,7 +40,6 @@ describe("Páginas de la tienda", () => {
 
     beforeEach(() => {
         almacen = simularLocalStorage();
-        inicializarDatos();
     });
 
 
@@ -92,10 +92,11 @@ describe("Páginas de la tienda", () => {
         });
 
 
-        it("el vendedor ve el catálogo sin botones para comprar", () => {
-            almacen[CLAVES.usuarios] = JSON.stringify([{ id: 9, nombre: "V", rol: "Vendedor", estado: "Activo" }]);
-            almacen[CLAVES.sesion] = JSON.stringify({ id: 9 });
+        it("el vendedor ve el catálogo sin botones para comprar", async () => {
+            simularServidor();
+            sesionGuardada(USUARIOS_PRUEBA.vendedor); // sesión restaurada con GET /auth/me
             const { contenedor } = montarPagina("/productos", <Productos />, "/productos");
+            await esperarApi();
             expect(botonPorTexto(contenedor, "Agregar al Carrito")).toBeNull();
         });
     });
@@ -159,7 +160,7 @@ describe("Páginas de la tienda", () => {
 
 
         it("avisa al intentar superar el stock con el selector", () => {
-            almacen[CLAVES.productos] = JSON.stringify([{ ...productosIniciales[0], stock: 1 }]);
+            establecerCatalogo({ productos: [{ ...productosIniciales[0], stock: 1 }] });
             const { contenedor } = montarDetalle(1);
             click(contenedor.querySelector("[aria-label='Sumar']"));
             expect(contenedor.querySelector(".alert-warning").textContent).toContain("No puedes superar el stock");
@@ -167,7 +168,7 @@ describe("Páginas de la tienda", () => {
 
 
         it("bloquea la compra de un producto agotado", () => {
-            almacen[CLAVES.productos] = JSON.stringify([{ ...productosIniciales[0], stock: 0 }]);
+            establecerCatalogo({ productos: [{ ...productosIniciales[0], stock: 0 }] });
             const { contenedor } = montarDetalle(1);
             expect(botonPorTexto(contenedor, "Producto agotado").disabled).toBeTrue();
         });
@@ -234,14 +235,17 @@ describe("Páginas de la tienda", () => {
 
 
     describe("CompraExitosa y PagoError", () => {
-        it("CompraExitosa muestra la boleta y simula el envío por email", () => {
-            const orden = crearOrden({
-                fecha: "2026-10-13", cliente: "Ana Pérez", correo: "ana@gmail.com", total: 119000, subtotal: 119000,
+        it("CompraExitosa pide la boleta a GET /boletas/{id} y simula el envío por email", async () => {
+            const orden = {
+                id: 77, usuarioId: USUARIOS_PRUEBA.cliente.id, estado: "Pagada", fecha: "2026-10-13", cliente: "Ana Pérez", correo: "ana@gmail.com", total: 119000, subtotal: 119000,
                 comprador: { nombre: "Ana", apellidos: "Pérez", correo: "ana@gmail.com" },
                 envio: { calle: "Calle 1", departamento: "603", comuna: "Santiago", region: "RM", indicaciones: "Tocar timbre" },
                 items: [{ id: 1, nombre: "PlayStation 5", precio: 119000, cantidad: 1 }]
-            });
+            };
+            simularServidor({ boletas: [orden] });
+            sesionGuardada(USUARIOS_PRUEBA.cliente);
             const { contenedor } = montarPagina("/compra-exitosa/:id", <CompraExitosa />, `/compra-exitosa/${orden.id}`);
+            await esperarApi();
 
 
             expect(contenedor.textContent).toContain("Se ha realizado la compra");
@@ -255,8 +259,11 @@ describe("Páginas de la tienda", () => {
         });
 
 
-        it("CompraExitosa informa si la orden no existe", () => {
+        it("CompraExitosa informa si la orden no existe (404)", async () => {
+            simularServidor();
+            sesionGuardada(USUARIOS_PRUEBA.cliente);
             const { contenedor } = montarPagina("/compra-exitosa/:id", <CompraExitosa />, "/compra-exitosa/123");
+            await esperarApi();
             expect(contenedor.textContent).toContain("Orden no encontrada");
         });
 

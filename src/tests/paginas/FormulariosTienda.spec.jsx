@@ -4,21 +4,21 @@ import Registro from "../../pages/Registro";
 import Contacto, { validarContacto } from "../../pages/Contacto";
 import Carrito from "../../pages/Carrito";
 import Login from "../../pages/Login";
-import { CLAVES, inicializarDatos } from "../../data/db";
-import { usuariosIniciales } from "../../data/semillas";
+import { CLAVES, obtenerProductos } from "../../data/db";
 import { botonPorTexto, click, enviar, escribir, montarConProveedores, seleccionar, simularLocalStorage } from "../utilidades";
+import { esperarApi, sesionGuardada, simularServidor, USUARIOS_PRUEBA } from "../servidorFalso";
 
 
-const ADMIN = usuariosIniciales[0];
+const ADMIN = USUARIOS_PRUEBA.admin;
 
 
 describe("Registro", () => {
-    let almacen;
+    let servidor;
 
 
     beforeEach(() => {
-        almacen = simularLocalStorage();
-        inicializarDatos();
+        simularLocalStorage();
+        servidor = simularServidor();
     });
 
 
@@ -56,34 +56,38 @@ describe("Registro", () => {
     });
 
 
-    it("registra al usuario y lo envía al login con mensaje de éxito", () => {
+    it("registra al usuario con POST /auth/registro y lo envía al login con mensaje de éxito", async () => {
         const { contenedor } = montarRegistro();
-        llenar(contenedor);
+        llenar(contenedor, { correo: "nueva@gmail.com" });
         enviar(contenedor.querySelector("form"));
+        await esperarApi();
 
 
-        const usuarios = JSON.parse(almacen[CLAVES.usuarios]);
-        expect(usuarios.find(u => u.correo === "ana@gmail.com")).toEqual(
+        const peticion = servidor.peticiones.find(p => p.ruta === "/auth/registro");
+        expect(peticion.metodo).toBe("POST");
+        expect(servidor.usuarios.find(u => u.correo === "nueva@gmail.com")).toEqual(
             jasmine.objectContaining({ run: "190110222", rol: "Cliente", comuna: "Quilpué" })
         );
         expect(contenedor.textContent).toContain("¡Registro completado con éxito!");
     });
 
 
-    it("rechaza un correo ya registrado", () => {
+    it("muestra el error 409 del backend si el correo ya está registrado", async () => {
         const { contenedor } = montarRegistro();
         llenar(contenedor, { correo: ADMIN.correo.toUpperCase() });
         enviar(contenedor.querySelector("form"));
+        await esperarApi();
 
 
         expect(contenedor.textContent).toContain("El correo electrónico ya se encuentra registrado.");
     });
 
 
-    it("rechaza un RUN ya registrado", () => {
+    it("muestra el error 409 del backend si el RUN ya está registrado", async () => {
         const { contenedor } = montarRegistro();
-        llenar(contenedor, { run: ADMIN.run });
+        llenar(contenedor, { run: ADMIN.run, correo: "otra@gmail.com" });
         enviar(contenedor.querySelector("form"));
+        await esperarApi();
 
 
         expect(contenedor.textContent).toContain("El RUN ya se encuentra registrado.");
@@ -132,9 +136,11 @@ describe("Carrito (página)", () => {
 
     function montarCarrito(carrito, sesion = null) {
         almacen = simularLocalStorage();
-        inicializarDatos();
         almacen[CLAVES.carrito] = JSON.stringify(carrito);
-        if (sesion) almacen[CLAVES.sesion] = JSON.stringify(sesion);
+        if (sesion) {
+            simularServidor();
+            sesionGuardada(sesion);
+        }
 
 
         return montarConProveedores(
@@ -204,19 +210,19 @@ describe("Carrito (página)", () => {
     });
 
 
-    it("con sesión, 'Proceder al Pago' lleva al checkout", () => {
+    it("con sesión, 'Proceder al Pago' lleva al checkout", async () => {
         const { contenedor } = montarCarrito([{ id: 1, cantidad: 1 }], ADMIN);
+        await esperarApi();
         click(botonPorTexto(contenedor, "Proceder al Pago"));
         expect(contenedor.querySelector("h1").textContent).toBe("Checkout");
     });
 
 
-    it("bloquea el pago si el stock bajó mientras el producto estaba en el carrito", () => {
+    it("bloquea el pago si el stock bajó mientras el producto estaba en el carrito", async () => {
         const { contenedor } = montarCarrito([{ id: 1, cantidad: 5 }], ADMIN);
-        // Otro cliente compró: el stock de la PS5 baja a 2.
-        const productos = JSON.parse(almacen[CLAVES.productos]);
-        productos[0].stock = 2;
-        almacen[CLAVES.productos] = JSON.stringify(productos);
+        await esperarApi();
+        // Otro cliente compró: el stock de la PS5 (en la caché del catálogo) baja a 2.
+        obtenerProductos()[0].stock = 2;
 
 
         click(botonPorTexto(contenedor, "Proceder al Pago"));

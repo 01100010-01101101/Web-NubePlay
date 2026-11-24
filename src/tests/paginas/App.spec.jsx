@@ -1,6 +1,5 @@
 
 import App from "../../App";
-import { inicializarDatos } from "../../data/db";
 import { montarConProveedores, simularLocalStorage } from "../utilidades";
 
 
@@ -12,7 +11,6 @@ function montarRuta(ruta) {
 describe("App (rutas)", () => {
     beforeEach(() => {
         simularLocalStorage();
-        inicializarDatos();
     });
 
 
