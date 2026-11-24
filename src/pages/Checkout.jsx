@@ -3,25 +3,52 @@ import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import TablaResumenCompra from "../components/checkout/TablaResumenCompra";
 import DatosEntrega from "../components/checkout/DatosEntrega";
 import ResumenTotales from "../components/checkout/ResumenTotales";
-import { obtenerProductos, registrarCompra } from "../data/db";
+import { obtenerProductos } from "../data/db";
+import { boletasApi } from "../api/servicios";
 import { calcularDescuento, calcularSubtotal, CUPON_VALIDO } from "../utils/carrito";
 import { crearNumeroOrden, datosDesdeUsuario, MENSAJE_LOGIN_COMPRA, procesarPago, validarCheckout } from "../utils/pago";
 import { formatearPrecio } from "../utils/formato";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useCatalogo } from "../context/CatalogoContext";
 
 
+
+
+// Mientras se restaura la sesión guardada (recarga de página) se espera antes de decidir
+// si redirigir al login, y así el formulario se autocompleta con los datos del usuario.
 function Checkout() {
+    const { verificando } = useAuth();
+    if (verificando) {
+        return (
+            <main className="container my-5 text-center">
+                <div className="spinner-border text-primary" role="status"></div>
+            </main>
+        );
+    }
+    return <FormularioCheckout />;
+}
+
+
+
+
+function FormularioCheckout() {
     const { items, cuponAplicado, sincronizar, vaciar } = useCart();
-    const { usuario, refrescarSesion } = useAuth();
+    const { usuario } = useAuth();
+    const { recargar } = useCatalogo();
     const navigate = useNavigate();
     const location = useLocation();
+
+
 
 
     const [datos, setDatos] = useState(() => location.state?.datos || datosDesdeUsuario(usuario));
     const [enviado, setEnviado] = useState(false);
     const [simularRechazo, setSimularRechazo] = useState(false);
+    const [procesando, setProcesando] = useState(false);
     const compraFinalizada = useRef(false);
+
+
 
 
     if (!usuario) {
@@ -29,9 +56,13 @@ function Checkout() {
     }
 
 
+
+
     if (items.length === 0 && !compraFinalizada.current) {
         return <Navigate to="/carrito" replace />;
     }
+
+
 
 
     const subtotal = calcularSubtotal(items);
@@ -40,42 +71,57 @@ function Checkout() {
     const errores = enviado ? validarCheckout(datos) : {};
 
 
-    function pagar(evento) {
+
+
+    function irAPagoError(motivo) {
+        navigate("/pago-error", {
+            state: { datos, items, subtotal, descuento, total, motivo, numero: crearNumeroOrden(Date.now()) }
+        });
+    }
+
+
+    async function pagar(evento) {
         evento.preventDefault();
         setEnviado(true);
-        if (Object.keys(validarCheckout(datos)).length > 0) return;
+        if (Object.keys(validarCheckout(datos)).length > 0 || procesando) return;
 
 
+        // Revisión rápida en el navegador (y simulación de rechazo del banco para la demo).
         const resultado = procesarPago(items, obtenerProductos(), { simularRechazo });
-
-
         if (!resultado.aprobado) {
             sincronizar();
-            navigate("/pago-error", {
-                state: { datos, items, subtotal, descuento, total, motivo: resultado.motivo, numero: crearNumeroOrden(Date.now()) }
-            });
+            irAPagoError(resultado.motivo);
             return;
         }
 
 
+        // POST /api/v1/boletas: el backend vuelve a validar el stock, toma los precios
+        // desde la base de datos, aplica el cupón y descuenta el inventario.
         const { calle, departamento, region, comuna, indicaciones, ...comprador } = datos;
-        const orden = registrarCompra({
-            usuarioId: usuario.id,
-            cupon: cuponAplicado ? CUPON_VALIDO : null,
-            comprador,
-            envio: { calle, departamento, region, comuna, indicaciones },
-            items,
-            subtotal,
-            descuento,
-            total
-        });
+        setProcesando(true);
+        try {
+            const orden = await boletasApi.crear({
+                comprador: { nombre: comprador.nombre, apellidos: comprador.apellidos, correo: comprador.correo },
+                envio: { calle, departamento, region, comuna, indicaciones },
+                items: items.map(item => ({ productoId: item.id, cantidad: Number(item.cantidad) })),
+                cupon: cuponAplicado ? CUPON_VALIDO : null
+            });
 
 
-        compraFinalizada.current = true;
-        vaciar();
-        refrescarSesion();
-        navigate(`/compra-exitosa/${orden.id}`, { replace: true });
+            compraFinalizada.current = true;
+            await recargar(); // el stock cambió en el backend
+            vaciar();
+            navigate(`/compra-exitosa/${orden.id}`, { replace: true, state: { orden } });
+        } catch (error) {
+            await recargar();
+            sincronizar();
+            irAPagoError(error.message);
+        } finally {
+            setProcesando(false);
+        }
     }
+
+
 
 
     return (
@@ -91,7 +137,11 @@ function Checkout() {
                     </div>
 
 
+
+
                     <TablaResumenCompra items={items} />
+
+
 
 
                     <form onSubmit={pagar} noValidate>
@@ -102,7 +152,11 @@ function Checkout() {
                         />
 
 
+
+
                         <ResumenTotales subtotal={subtotal} descuento={descuento} total={total} />
+
+
 
 
                         <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
@@ -119,8 +173,10 @@ function Checkout() {
                                     Modo demostración: simular pago rechazado
                                 </label>
                             </div>
-                            <button type="submit" className="btn btn-success fw-bold px-4">
-                                <i className="bi bi-credit-card me-1"></i> Pagar ahora {formatearPrecio(total)}
+                            <button type="submit" className="btn btn-success fw-bold px-4" disabled={procesando}>
+                                {procesando
+                                    ? <span className="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    : <i className="bi bi-credit-card me-1"></i>} Pagar ahora {formatearPrecio(total)}
                             </button>
                         </div>
                     </form>
@@ -131,5 +187,11 @@ function Checkout() {
 }
 
 
+
+
 export default Checkout;
+
+
+
+
 

@@ -1,16 +1,42 @@
-import { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useParams } from "react-router-dom";
 import BoletaCompra from "../components/checkout/BoletaCompra";
 import EstadoVacio from "../components/common/EstadoVacio";
 import Alerta from "../components/common/Alerta";
-import { obtenerOrdenPorId } from "../data/db";
+import { boletasApi } from "../api/servicios";
 import { crearNumeroOrden } from "../utils/pago";
+
+
 
 
 function CompraExitosa() {
     const { id } = useParams();
-    const orden = obtenerOrdenPorId(id);
+    const location = useLocation();
+    // Recién comprada, la boleta llega desde el checkout; si se recarga la página se pide a GET /boletas/{id}.
+    const ordenRecibida = location.state?.orden && String(location.state.orden.id) === String(id) ? location.state.orden : null;
+    const [orden, setOrden] = useState(ordenRecibida);
+    const [cargando, setCargando] = useState(!ordenRecibida);
     const [mensajeEmail, setMensajeEmail] = useState(null);
+
+
+    useEffect(() => {
+        if (ordenRecibida) return;
+        let activo = true;
+        boletasApi.obtener(id)
+            .then(datos => activo && setOrden(datos))
+            .catch(() => activo && setOrden(null))
+            .finally(() => activo && setCargando(false));
+        return () => { activo = false; };
+    }, [id, ordenRecibida]);
+
+
+    if (cargando) {
+        return (
+            <main className="container my-5 text-center">
+                <div className="spinner-border text-primary" role="status"></div>
+            </main>
+        );
+    }
 
 
     if (!orden) {
@@ -22,6 +48,8 @@ function CompraExitosa() {
             </main>
         );
     }
+
+
 
 
     return (
@@ -37,10 +65,16 @@ function CompraExitosa() {
                     </div>
 
 
+
+
                     <BoletaCompra orden={orden} />
 
 
+
+
                     <Alerta className="mt-3" mensaje={mensajeEmail} onCerrar={() => setMensajeEmail(null)} />
+
+
 
 
                     <div className="d-flex flex-wrap justify-content-center gap-2 mt-4">
@@ -60,5 +94,11 @@ function CompraExitosa() {
 }
 
 
+
+
 export default CompraExitosa;
+
+
+
+
 
